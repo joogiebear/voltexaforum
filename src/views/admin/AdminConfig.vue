@@ -9,7 +9,7 @@ const error = ref(null)
 const saving = ref({})
 
 const forumSettings = ref({
-  forum_name: 'VoltexaMC Forums',
+  forum_name: 'My Forum',
   multi_game: false,
   accent_color: '#7c3aed',
   maintenance_mode: false,

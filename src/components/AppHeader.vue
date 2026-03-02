@@ -15,7 +15,7 @@ const authStore = useAuthStore()
 const notifStore = useNotificationsStore()
 const messagesStore = useMessagesStore()
 const forumStore = useForumStore()
-const forumName = computed(() => forumStore.config?.forum_name || 'VoltexaMC')
+const forumName = computed(() => forumStore.config?.forum_name || 'My Forum')
 
 const mobileOpen = ref(false)
 const avatarDropdownOpen = ref(false)

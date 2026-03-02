@@ -7,7 +7,7 @@ const pluginCapabilities = [
   { icon: '🏆', text: 'Add achievement triggers' },
 ]
 
-const codeExample = `// voltexahub-plugin.js
+const codeExample = `// forum-plugin.js
 export default {
   name: 'my-plugin',
   version: '1.0.0',
@@ -71,7 +71,7 @@ export default {
     <!-- Explanation -->
     <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-6 space-y-4">
       <p class="text-sm text-gray-300">
-        The plugin system allows extending VoltexaHub with custom features, integrations, and automations.
+        The plugin system allows extending the forum with custom features, integrations, and automations.
         Plugins can hook into the core platform to add functionality without modifying the base code.
       </p>
 
@@ -92,7 +92,7 @@ export default {
     <div class="bg-gray-800 rounded-xl border border-gray-700/50 overflow-hidden">
       <div class="px-5 py-3 border-b border-gray-700/50 flex items-center justify-between">
         <h4 class="text-sm font-semibold text-white">Plugin Registration API (Preview)</h4>
-        <span class="text-xs text-gray-500 font-mono">voltexahub-plugin.js</span>
+        <span class="text-xs text-gray-500 font-mono">forum-plugin.js</span>
       </div>
       <pre class="p-5 overflow-x-auto text-sm leading-relaxed"><code class="text-gray-300">{{ codeExample }}</code></pre>
     </div>

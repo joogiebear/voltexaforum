@@ -12,6 +12,7 @@ import RegisterView from '../views/RegisterView.vue'
 import NotificationsView from '../views/NotificationsView.vue'
 import MessagesView from '../views/MessagesView.vue'
 import { useAuthStore } from '../stores/auth'
+import { useForumStore } from '../stores/forum'
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
@@ -77,6 +78,13 @@ router.beforeEach((to) => {
   if ((to.name === 'Login' || to.name === 'Register') && authStore.isLoggedIn) {
     return '/'
   }
+})
+
+router.afterEach((to) => {
+  const forumStore = useForumStore()
+  const forumName = forumStore.config?.forum_name || 'My Forum'
+  const pageTitle = to.meta?.title || to.name || ''
+  document.title = pageTitle ? `${forumName} - ${pageTitle}` : forumName
 })
 
 export default router

@@ -1,5 +1,5 @@
+// Default fallbacks only — real values come from /api/forum/config
 export const forumConfig = {
-  multiGame: false,
-  forumName: 'VoltexaMC Forums',
+  forumName: 'My Forum',
   accentColor: '#7c3aed',
 }

@@ -1,16 +1,23 @@
 <script setup>
-import { provide, computed } from 'vue'
+import { provide, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from './composables/useTheme'
+import { useForumStore } from './stores/forum'
 import AppHeader from './components/AppHeader.vue'
 import AppToast from './components/AppToast.vue'
 
 const route = useRoute()
 const { isDark, toggle } = useTheme()
+const forumStore = useForumStore()
 provide('isDark', isDark)
 provide('toggleTheme', toggle)
 
 const isAdmin = computed(() => route.path.startsWith('/admin'))
+
+// Apply accent color from config dynamically
+watch(() => forumStore.config?.accent_color, (color) => {
+  if (color) document.documentElement.style.setProperty('--color-purple-accent', color)
+}, { immediate: true })
 </script>
 
 <template>

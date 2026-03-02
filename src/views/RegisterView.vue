@@ -2,10 +2,13 @@
 import { inject, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useForumStore } from '../stores/forum'
 
 const isDark = inject('isDark')
 const router = useRouter()
 const authStore = useAuthStore()
+const forumStore = useForumStore()
+const forumName = computed(() => forumStore.config?.forum_name || 'My Forum')
 
 const username = ref('')
 const email = ref('')
@@ -56,7 +59,7 @@ async function handleRegister() {
       <div class="text-center mb-8">
         <router-link to="/" class="inline-flex items-center gap-2 font-bold text-2xl">
           <span class="text-3xl">&#9889;</span>
-          <span class="text-purple-accent">Voltexa</span><span>Forum</span>
+          <span class="text-purple-accent">{{ forumName }}</span>
         </router-link>
         <p class="text-sm mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
           Create your account
