@@ -82,7 +82,7 @@ async function handleLogout() {
             class="p-2 rounded-lg transition-colors"
             :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
           >
-            {{ isDark ? '&#127769;' : '&#9728;&#65039;' }}
+            <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" class="text-base w-4 text-center" :style="isDark ? 'color: #a78bfa' : 'color: #f59e0b'"></i>
           </button>
 
           <!-- Logged-in user -->
@@ -370,7 +370,7 @@ async function handleLogout() {
               class="p-2 rounded-lg transition-colors"
               :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
             >
-              {{ isDark ? '&#127769;' : '&#9728;&#65039;' }}
+              <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" class="text-base w-4 text-center" :style="isDark ? 'color: #a78bfa' : 'color: #f59e0b'"></i>
             </button>
             <router-link
               to="/credits"
@@ -404,7 +404,7 @@ async function handleLogout() {
               class="p-2 rounded-lg transition-colors"
               :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
             >
-              {{ isDark ? '&#127769;' : '&#9728;&#65039;' }}
+              <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" class="text-base w-4 text-center" :style="isDark ? 'color: #a78bfa' : 'color: #f59e0b'"></i>
             </button>
           </div>
           <router-link
