@@ -61,8 +61,8 @@ async function handleAvatarUpload() {
     formData.append('avatar', avatarFile.value)
     const res = await uploadAvatar(formData)
     const newUrl = res.data.data?.avatar_url || res.data.avatar_url
-    if (newUrl && authStore.user) {
-      authStore.user.avatar_url = newUrl
+    if (newUrl) {
+      authStore.setAvatarUrl(newUrl)
     }
     avatarPreview.value = null
     avatarFile.value = null

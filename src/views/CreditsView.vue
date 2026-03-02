@@ -1,7 +1,7 @@
 <script setup>
 import { inject, ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { getUserCredits } from '../services/api'
+import { getUserCredits, getCreditsEarningInfo } from '../services/api'
 
 const isDark = inject('isDark')
 const authStore = useAuthStore()
@@ -11,6 +11,9 @@ const loading = ref(true)
 const error = ref(null)
 const currentPage = ref(1)
 const perPage = 10
+
+const earningInfo = ref(null)
+const earningLoading = ref(true)
 
 async function fetchCredits() {
   loading.value = true
@@ -25,7 +28,29 @@ async function fetchCredits() {
   }
 }
 
-onMounted(fetchCredits)
+async function fetchEarningInfo() {
+  earningLoading.value = true
+  try {
+    const res = await getCreditsEarningInfo()
+    earningInfo.value = res.data.data || res.data
+  } catch {
+    earningInfo.value = null
+  } finally {
+    earningLoading.value = false
+  }
+}
+
+const roleMultipliers = computed(() => {
+  if (!earningInfo.value?.role_multipliers) return []
+  return Object.entries(earningInfo.value.role_multipliers)
+    .filter(([, v]) => v !== 1.0)
+    .map(([role, multiplier]) => ({ role, multiplier }))
+})
+
+onMounted(() => {
+  fetchCredits()
+  fetchEarningInfo()
+})
 
 const totalEarned = computed(() => creditsLog.value.filter(c => c.type === 'earn').reduce((sum, c) => sum + c.amount, 0))
 const totalSpent = computed(() => creditsLog.value.filter(c => c.type === 'spend').reduce((sum, c) => sum + c.amount, 0))
@@ -103,6 +128,58 @@ function formatDate(dateStr) {
         >
           <div class="text-2xl font-bold text-purple-accent">&#9889; {{ authStore.credits.toLocaleString() }}</div>
           <div class="text-sm mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Current Balance</div>
+        </div>
+      </div>
+
+      <!-- Earning Guide -->
+      <div v-if="earningLoading" class="mb-8">
+        <div class="h-6 rounded w-48 mb-4 animate-pulse" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div v-for="i in 3" :key="i" class="rounded-xl p-5 animate-pulse" :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'">
+            <div class="h-10 rounded w-2/3 mx-auto" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'" />
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="earningInfo?.ways_to_earn?.length" class="mb-8">
+        <h2 class="text-lg font-bold mb-4">How to Earn Credits</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            v-for="way in earningInfo.ways_to_earn"
+            :key="way.action"
+            class="rounded-xl p-5 flex items-center gap-4 transition-colors duration-300"
+            :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'"
+          >
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              :class="isDark ? 'bg-purple-accent/15' : 'bg-purple-100'"
+            >
+              <i :class="way.icon" class="text-purple-accent"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-sm font-medium truncate">{{ way.action }}</div>
+              <div class="text-sm font-bold text-green-400">+{{ way.credits }} credits</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Bonuses -->
+        <div v-if="roleMultipliers.length" class="mt-6">
+          <h3 class="text-base font-semibold mb-3">Role Bonuses</h3>
+          <div
+            class="rounded-xl overflow-hidden"
+            :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'"
+          >
+            <div
+              v-for="(rm, idx) in roleMultipliers"
+              :key="rm.role"
+              class="flex items-center justify-between px-5 py-3"
+              :class="idx < roleMultipliers.length - 1 ? (isDark ? 'border-b border-gray-800/50' : 'border-b border-gray-100') : ''"
+            >
+              <span class="text-sm font-medium capitalize">{{ rm.role }}</span>
+              <span class="text-sm font-bold text-purple-accent">{{ rm.multiplier }}x</span>
+            </div>
+          </div>
         </div>
       </div>
 

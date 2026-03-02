@@ -61,6 +61,7 @@ export const getUserProfile = (username) => api.get('/users/' + username + '/pro
 export const updateProfile = (data) => api.put('/user/profile', data)
 export const updateAccount = (data) => api.put('/user/account', data)
 export const getUserCredits = () => api.get('/user/credits')
+export const getCreditsEarningInfo = () => api.get('/credits/earning-info')
 export const getUserAchievements = () => api.get('/user/achievements')
 export const getUserAwards = () => api.get('/user/awards')
 export const getUserNotifications = () => api.get('/user/notifications')

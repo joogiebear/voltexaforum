@@ -21,6 +21,15 @@ const creditsSettings = ref({
   credits_per_thread: 10,
   credits_per_reply: 5,
   credits_for_solved: 25,
+  credits_per_like: 1,
+  credits_per_like_given: 0,
+  credits_daily_post_limit: 50,
+})
+
+const roleMultipliers = ref({
+  admin: 1.0,
+  moderator: 1.0,
+  member: 1.0,
 })
 
 const storeSettings = ref({
@@ -36,7 +45,17 @@ async function fetchConfig() {
     const res = await getAdminConfig()
     const d = res.data.data || res.data
     if (d.forum) Object.assign(forumSettings.value, d.forum)
-    if (d.credits) Object.assign(creditsSettings.value, d.credits)
+    if (d.credits) {
+      Object.assign(creditsSettings.value, d.credits)
+      if (d.credits.role_credit_multipliers) {
+        try {
+          const parsed = typeof d.credits.role_credit_multipliers === 'string'
+            ? JSON.parse(d.credits.role_credit_multipliers)
+            : d.credits.role_credit_multipliers
+          Object.assign(roleMultipliers.value, parsed)
+        } catch {}
+      }
+    }
     if (d.store) Object.assign(storeSettings.value, d.store)
     if (d.game_servers) gameServers.value = d.game_servers
     // Also allow flat config
@@ -69,7 +88,10 @@ function saveForumSettings() {
 }
 
 function saveCreditsSettings() {
-  saveSection('credits', creditsSettings.value)
+  saveSection('credits', {
+    ...creditsSettings.value,
+    role_credit_multipliers: JSON.stringify(roleMultipliers.value),
+  })
 }
 
 function saveStoreSettings() {
@@ -229,6 +251,37 @@ onMounted(fetchConfig)
           <div>
             <label class="block text-sm font-medium text-gray-400 mb-1.5">Credits for Solved Thread</label>
             <input v-model="creditsSettings.credits_for_solved" type="number" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1.5">Credits per Like Received</label>
+            <input v-model="creditsSettings.credits_per_like" type="number" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1.5">Credits for Giving a Like</label>
+            <input v-model="creditsSettings.credits_per_like_given" type="number" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1.5">Max Credits from Posting per Day</label>
+            <input v-model="creditsSettings.credits_daily_post_limit" type="number" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Role Multipliers -->
+        <div class="border-t border-gray-700/50 pt-5 mt-5">
+          <h4 class="text-sm font-semibold text-gray-300 mb-3">Role Multipliers</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1.5">Admin Multiplier</label>
+              <input v-model.number="roleMultipliers.admin" type="number" step="0.1" min="0" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1.5">Moderator Multiplier</label>
+              <input v-model.number="roleMultipliers.moderator" type="number" step="0.1" min="0" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1.5">Member Multiplier</label>
+              <input v-model.number="roleMultipliers.member" type="number" step="0.1" min="0" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+            </div>
           </div>
         </div>
       </div>

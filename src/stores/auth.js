@@ -56,6 +56,9 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('voltexahub_token')
     },
+    setAvatarUrl(url) {
+      if (this.user) this.user = { ...this.user, avatar_url: url }
+    },
     async fetchUser() {
       if (!this.token) return
       try {
