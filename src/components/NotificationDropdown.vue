@@ -46,13 +46,16 @@ function notifIcon(type) {
 }
 
 async function handleClick(notification) {
+  // Always mark as read on click
   if (!notification.read_at) {
     await notifStore.markRead(notification.id)
   }
   if (notification.data?.url) {
     router.push(notification.data.url)
+  } else {
+    // No URL — just close dropdown, badge will have cleared
+    emit('close')
   }
-  emit('close')
 }
 
 function handleMarkAllRead() {

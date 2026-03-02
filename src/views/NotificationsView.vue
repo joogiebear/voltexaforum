@@ -165,11 +165,11 @@ function handleDelete(n) {
                 <button
                   v-if="!n.read_at"
                   @click.stop="handleMarkRead(n)"
-                  class="text-xs px-2 py-1 rounded transition-colors"
-                  :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'"
+                  class="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium transition-colors bg-purple-accent/10 text-purple-accent hover:bg-purple-accent/20"
                   title="Mark as read"
                 >
-                  ✓
+                  <i class="fa-solid fa-check text-xs"></i>
+                  <span>Mark read</span>
                 </button>
                 <button
                   @click.stop="handleDelete(n)"
