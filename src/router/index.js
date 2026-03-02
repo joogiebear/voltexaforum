@@ -20,6 +20,7 @@ import { useForumStore } from '../stores/forum'
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
+  { path: '/maintenance', name: 'Maintenance', component: () => import('../views/MaintenanceView.vue') },
   { path: '/forum/:slug', name: 'Forum', component: ThreadListView },
   { path: '/thread/:id', name: 'Thread', component: ThreadView },
   { path: '/store', name: 'Store', component: StoreView },
@@ -71,6 +72,12 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
+  const forumStore = useForumStore()
+
+  // Maintenance mode — redirect non-admins to /maintenance
+  if (forumStore.isMaintenanceMode && !authStore.isAdmin && to.path !== '/maintenance') {
+    return '/maintenance'
+  }
 
   if (to.meta.requiresAuth && !authStore.token) {
     return { path: '/login', query: { redirect: to.fullPath } }

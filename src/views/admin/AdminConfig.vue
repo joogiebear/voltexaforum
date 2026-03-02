@@ -60,9 +60,9 @@ async function fetchConfig() {
     if (d.game_servers) gameServers.value = d.game_servers
     // Also allow flat config
     if (d.forum_name) forumSettings.value.forum_name = d.forum_name
-    if (d.multi_game !== undefined) forumSettings.value.multi_game = d.multi_game
+    if (d.multi_game !== undefined) forumSettings.value.multi_game = d.multi_game === true || d.multi_game === 'true'
     if (d.accent_color) forumSettings.value.accent_color = d.accent_color
-    if (d.maintenance_mode !== undefined) forumSettings.value.maintenance_mode = d.maintenance_mode
+    if (d.maintenance_mode !== undefined) forumSettings.value.maintenance_mode = d.maintenance_mode === true || d.maintenance_mode === 'true'
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to load config'
     toast.show(error.value, 'error')

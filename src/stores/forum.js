@@ -10,7 +10,8 @@ export const useForumStore = defineStore('forum', {
     loading: false,
   }),
   getters: {
-    isMultiGame: (state) => state.config?.multi_game || false,
+    isMultiGame: (state) => state.config?.multi_game === true || state.config?.multi_game === 'true',
+    isMaintenanceMode: (state) => state.config?.maintenance_mode === true || state.config?.maintenance_mode === 'true',
   },
   actions: {
     async fetchConfig() {
