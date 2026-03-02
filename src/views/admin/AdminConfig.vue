@@ -55,7 +55,7 @@ async function fetchConfig() {
 async function saveSection(section, data) {
   saving.value[section] = true
   try {
-    await updateAdminConfig({ [section]: data })
+    await updateAdminConfig({ config: data })
     toast.show('Settings saved')
   } catch (e) {
     toast.show(e.response?.data?.message || 'Failed to save settings', 'error')
