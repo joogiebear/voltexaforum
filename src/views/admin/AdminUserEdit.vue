@@ -311,7 +311,8 @@ onMounted(() => {
               :key="award.id"
               class="flex items-center gap-2 px-3 py-1.5 bg-gray-700 rounded-lg"
             >
-              <span>{{ award.icon }}</span>
+              <img v-if="award.icon_url" :src="award.icon_url" class="w-5 h-5 object-contain" />
+              <span v-else>{{ award.icon || '⭐' }}</span>
               <span class="text-sm text-gray-300">{{ award.name }}</span>
               <button @click="doRevokeAward(award.id)" class="text-gray-500 hover:text-red-400 transition-colors ml-1">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

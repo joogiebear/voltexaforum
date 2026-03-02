@@ -7,6 +7,7 @@ import {
   createAdminForum, updateAdminForum, deleteAdminForum,
 } from '../../services/api'
 import { useToastStore } from '../../stores/toast'
+import FaIconPicker from '../../components/FaIconPicker.vue'
 
 const toast = useToastStore()
 const loading = ref(true)
@@ -16,7 +17,7 @@ const tree = ref([])
 const expandedGames = ref({})
 const expandedCategories = ref({})
 const showInlineForm = ref(null)
-const inlineForm = ref({ name: '', slug: '', description: '' })
+const inlineForm = ref({ name: '', slug: '', description: '', icon: 'fa-solid fa-comment' })
 
 async function fetchTree() {
   loading.value = true
@@ -45,7 +46,7 @@ function toggleCategory(key) {
 
 function showForm(key) {
   showInlineForm.value = showInlineForm.value === key ? null : key
-  inlineForm.value = { name: '', slug: '', description: '' }
+  inlineForm.value = { name: '', slug: '', description: '', icon: 'fa-solid fa-comment' }
 }
 
 function autoSlug() {
@@ -76,7 +77,7 @@ async function submitCreateCategory(gameId) {
 
 async function submitCreateForum(categoryId) {
   try {
-    await createAdminForum({ name: inlineForm.value.name, slug: inlineForm.value.slug, description: inlineForm.value.description, category_id: categoryId })
+    await createAdminForum({ name: inlineForm.value.name, slug: inlineForm.value.slug, description: inlineForm.value.description, icon: inlineForm.value.icon, category_id: categoryId })
     toast.show('Forum created')
     showInlineForm.value = null
     fetchTree()
@@ -248,6 +249,10 @@ onMounted(fetchTree)
               <input v-model="inlineForm.slug" type="text" placeholder="slug" class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
               <input v-model="inlineForm.description" type="text" placeholder="Description" class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
             </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-400 mb-1">Forum Icon</label>
+              <FaIconPicker v-model="inlineForm.icon" />
+            </div>
             <div class="flex gap-2">
               <button @click="submitCreateForum(category.id)" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium rounded-lg transition-colors">Create</button>
               <button @click="showInlineForm = null" class="px-3 py-1.5 bg-gray-700 text-gray-300 text-xs font-medium rounded-lg hover:bg-gray-600 transition-colors">Cancel</button>
@@ -263,7 +268,7 @@ onMounted(fetchTree)
             >
               <div class="flex items-center gap-3">
                 <span class="text-gray-500 cursor-grab" title="Drag to reorder">⠿</span>
-                <span>{{ forum.icon }}</span>
+                <i :class="forum.icon || 'fa-solid fa-comment'" class="text-gray-400"></i>
                 <div>
                   <span class="text-sm font-medium text-gray-300">{{ forum.name }}</span>
                   <span class="text-xs text-gray-500 ml-2">{{ forum.thread_count || forum.threads || 0 }} threads</span>

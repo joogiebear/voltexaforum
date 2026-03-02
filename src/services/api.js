@@ -130,8 +130,12 @@ export const createAdminAchievement = (data) => api.post('/admin/achievements', 
 export const updateAdminAchievement = (id, data) => api.put('/admin/achievements/' + id, data)
 export const deleteAdminAchievement = (id) => api.delete('/admin/achievements/' + id)
 export const getAdminAwards = () => api.get('/admin/awards')
-export const createAdminAward = (data) => api.post('/admin/awards', data)
-export const updateAdminAward = (id, data) => api.put('/admin/awards/' + id, data)
+export const createAdminAward = (data) =>
+  api.post('/admin/awards', data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {})
+export const updateAdminAward = (id, data) =>
+  data instanceof FormData
+    ? api.post('/admin/awards/' + id + '?_method=PUT', data, { headers: { 'Content-Type': 'multipart/form-data' } })
+    : api.put('/admin/awards/' + id, data)
 export const deleteAdminAward = (id) => api.delete('/admin/awards/' + id)
 
 // Admin - Config

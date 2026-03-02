@@ -290,7 +290,8 @@ function formatDate(dateStr) {
             :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200 shadow-sm'"
           >
             <div class="text-center">
-              <span class="text-4xl">{{ award.icon }}</span>
+              <img v-if="award.icon_url" :src="award.icon_url" class="w-12 h-12 object-contain mx-auto" />
+              <span v-else class="text-4xl">{{ award.icon || '⭐' }}</span>
               <h4 class="font-semibold mt-2">{{ award.name }}</h4>
               <p class="text-sm mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 {{ award.description }}

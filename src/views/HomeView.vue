@@ -170,7 +170,7 @@ const singleGameKey = computed(() => Object.keys(groupedForums.value)[0])
                       class="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0"
                       :class="isDark ? 'bg-gray-800' : 'bg-gray-100'"
                     >
-                      {{ forum.icon }}
+                      <i :class="forum.icon || 'fa-solid fa-comment'" class="text-purple-accent"></i>
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="font-semibold group-hover:text-purple-accent transition-colors">
@@ -247,7 +247,7 @@ const singleGameKey = computed(() => Object.keys(groupedForums.value)[0])
                     class="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0"
                     :class="isDark ? 'bg-gray-800' : 'bg-gray-100'"
                   >
-                    {{ forum.icon }}
+                    <i :class="forum.icon || 'fa-solid fa-comment'" class="text-purple-accent"></i>
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold group-hover:text-purple-accent transition-colors">

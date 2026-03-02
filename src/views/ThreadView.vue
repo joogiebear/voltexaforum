@@ -181,14 +181,13 @@ onMounted(loadThread)
                   v-if="post.author?.awards?.length"
                   class="flex items-center justify-center gap-1 mt-1"
                 >
-                  <span
+                  <template
                     v-for="award in post.author.awards.slice(0, 4)"
                     :key="award.id"
-                    class="cursor-default"
-                    :title="award.name"
                   >
-                    {{ award.icon }}
-                  </span>
+                    <img v-if="award.icon_url" :src="award.icon_url" class="w-5 h-5 object-contain cursor-default" :title="award.name" />
+                    <span v-else class="cursor-default" :title="award.name">{{ award.icon || '⭐' }}</span>
+                  </template>
                 </div>
               </div>
             </div>
