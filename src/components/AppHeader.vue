@@ -1,9 +1,10 @@
 <script setup>
-import { inject, ref } from 'vue'
+import { inject, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useNotificationsStore } from '../stores/notifications'
 import { useMessagesStore } from '../stores/messages'
+import { useForumStore } from '../stores/forum'
 import UserAvatar from './UserAvatar.vue'
 import NotificationDropdown from './NotificationDropdown.vue'
 
@@ -13,6 +14,8 @@ const router = useRouter()
 const authStore = useAuthStore()
 const notifStore = useNotificationsStore()
 const messagesStore = useMessagesStore()
+const forumStore = useForumStore()
+const forumName = computed(() => forumStore.config?.forum_name || 'VoltexaMC')
 
 const mobileOpen = ref(false)
 const avatarDropdownOpen = ref(false)
@@ -59,7 +62,7 @@ async function handleLogout() {
         <!-- Logo -->
         <router-link to="/" class="flex items-center gap-2 font-bold text-xl shrink-0">
           <i class="fa-solid fa-bolt text-2xl text-violet-400"></i>
-          <span class="text-purple-accent">Voltexa</span><span>Forum</span>
+          <span>{{ forumName }}</span>
         </router-link>
 
         <!-- Desktop Nav -->
