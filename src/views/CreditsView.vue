@@ -6,6 +6,7 @@ import { getUserCredits, getCreditsEarningInfo } from '../services/api'
 const isDark = inject('isDark')
 const authStore = useAuthStore()
 
+const creditsBalance = ref(0)
 const creditsLog = ref([])
 const loading = ref(true)
 const error = ref(null)
@@ -20,7 +21,9 @@ async function fetchCredits() {
   error.value = null
   try {
     const res = await getUserCredits()
-    creditsLog.value = res.data.data
+    const data = res.data.data
+    creditsBalance.value = data.balance ?? 0
+    creditsLog.value = Array.isArray(data.log) ? data.log : []
   } catch (e) {
     error.value = 'Failed to load credits history. Please try again.'
   } finally {
