@@ -80,8 +80,8 @@ export const createCheckout = (data) => api.post('/store/checkout', data)
 
 // Notifications
 export const getNotifications = () => api.get('/notifications')
-export const markNotificationRead = (id) => api.put('/notifications/' + id + '/read')
-export const markAllNotificationsRead = () => api.put('/notifications/read-all')
+export const markNotificationRead = (id) => api.post('/notifications/' + id + '/read')
+export const markAllNotificationsRead = () => api.post('/notifications/read-all')
 export const deleteNotification = (id) => api.delete('/notifications/' + id)
 
 // Conversations / DMs
