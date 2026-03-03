@@ -162,7 +162,7 @@ async function handleMoneyPurchase(item) {
             </p>
           </div>
           <div v-if="featuredItem.price_money" class="text-center shrink-0">
-            <div class="text-2xl font-bold text-green-400 mb-2">${{ featuredItem.price_money?.toFixed(2) }}</div>
+            <div class="text-2xl font-bold text-green-400 mb-2">${{ Number(featuredItem.price_money).toFixed(2) }}</div>
             <button
               class="px-8 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all duration-200"
             >
@@ -230,7 +230,7 @@ async function handleMoneyPurchase(item) {
                 v-if="item.price_money"
                 class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-500/15 text-green-400"
               >
-                ${{ item.price_money.toFixed(2) }}
+                ${{ Number(item.price_money).toFixed(2) }}
               </span>
               <span
                 v-if="item.price_credits"
