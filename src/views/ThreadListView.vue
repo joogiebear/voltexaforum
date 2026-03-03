@@ -18,12 +18,19 @@ const loading = ref(true)
 const error = ref(null)
 const currentPage = ref(1)
 const pagination = ref(null)
+const search = ref('')
+let searchTimer = null
+
+function onSearchInput() {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => loadThreads(1), 350)
+}
 
 async function loadThreads(page = 1) {
   loading.value = true
   error.value = null
   try {
-    const res = await getForumThreads(route.params.slug, page)
+    const res = await getForumThreads(route.params.slug, page, search.value)
     threads.value = res.data.data
     forumMeta.value = res.data.forum || null
     pagination.value = res.data.meta || null
@@ -114,6 +121,19 @@ function tagClass(tag) {
         >
           <i class="fa-solid fa-pen-to-square"></i> New Thread
         </router-link>
+      </div>
+
+      <!-- Search -->
+      <div class="relative mb-4">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none" :class="isDark ? 'text-gray-500' : 'text-gray-400'"></i>
+        <input
+          v-model="search"
+          @input="onSearchInput"
+          type="text"
+          placeholder="Search threads..."
+          class="w-full pl-9 pr-4 py-2.5 rounded-lg border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-purple-accent"
+          :class="isDark ? 'bg-gray-900 border-gray-800 text-white placeholder-gray-600 focus:border-purple-accent' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-purple-accent'"
+        />
       </div>
 
       <!-- Sub Forums section -->
