@@ -176,7 +176,7 @@ onMounted(fetchUsers)
                 </td>
                 <td class="px-5 py-3 text-gray-400">{{ (user.post_count || user.postCount || 0).toLocaleString() }}</td>
                 <td class="px-5 py-3 text-gray-400"><i class="fa-solid fa-coins mr-1"></i>{{ (user.credits || 0).toLocaleString() }}</td>
-                <td class="px-5 py-3 text-gray-400">{{ user.created_at || user.joinDate }}</td>
+                <td class="px-5 py-3 text-gray-400">{{ user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—' }}</td>
                 <td class="px-5 py-3 text-gray-400">{{ user.last_active || user.lastActive }}</td>
                 <td class="px-5 py-3">
                   <div class="flex items-center gap-1">
