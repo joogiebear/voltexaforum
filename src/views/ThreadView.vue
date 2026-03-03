@@ -520,14 +520,14 @@ onMounted(loadThread)
                 <!-- Background image with fade -->
                 <div
                   v-if="post.author?.postbit_bg"
-                  class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
                   :style="{ backgroundImage: `url(${post.author.postbit_bg})` }"
                 />
                 <!-- Fade gradient -->
                 <div
                   v-if="post.author?.postbit_bg"
                   class="absolute inset-0"
-                  :style="{ background: isDark ? 'linear-gradient(to bottom, rgba(17,24,39,0) 0%, rgba(17,24,39,0.6) 60%, rgba(17,24,39,1) 100%)' : 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,1) 100%)' }"
+                  :style="{ background: isDark ? 'linear-gradient(to bottom, rgba(17,24,39,0.2) 0%, rgba(17,24,39,0.7) 55%, rgba(17,24,39,1) 85%)' : 'linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.7) 55%, rgba(255,255,255,1) 85%)' }"
                 />
 
                 <!-- Content (z-10 above bg) -->
