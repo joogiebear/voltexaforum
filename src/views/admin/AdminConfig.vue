@@ -38,6 +38,17 @@ const storeSettings = ref({
   currency: 'USD',
 })
 
+const mailSettings = ref({
+  mail_mailer: 'smtp',
+  mail_host: '',
+  mail_port: '587',
+  mail_username: '',
+  mail_password: '',
+  mail_encryption: 'tls',
+  mail_from_address: '',
+  mail_from_name: '',
+})
+
 async function fetchConfig() {
   loading.value = true
   error.value = null
@@ -45,6 +56,7 @@ async function fetchConfig() {
     const res = await getAdminConfig()
     const d = res.data.data || res.data
     if (d.forum) Object.assign(forumSettings.value, d.forum)
+    if (d.mail) Object.assign(mailSettings.value, d.mail)
     if (d.credits) {
       Object.assign(creditsSettings.value, d.credits)
       if (d.credits.role_credit_multipliers) {
@@ -113,6 +125,13 @@ function testConnection(server) {
 }
 
 onMounted(fetchConfig)
+function saveMailSettings() {
+  const config = { ...mailSettings.value }
+  updateAdminConfig({ config })
+    .then(() => { saving.value.mail = false })
+    .catch(() => { saving.value.mail = false })
+  saving.value.mail = true
+}
 </script>
 
 <template>
@@ -314,6 +333,60 @@ onMounted(fetchConfig)
           </div>
         </div>
       </div>
+      <!-- Email / SMTP Settings -->
+      <div class="bg-gray-800 rounded-xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold text-white"><i class="fa-solid fa-envelope mr-2 text-violet-400"></i>Email / SMTP</h3>
+          <button @click="saveMailSettings" :disabled="saving.mail" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
+            {{ saving.mail ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Mailer</label>
+            <select v-model="mailSettings.mail_mailer" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none">
+              <option value="smtp">SMTP</option>
+              <option value="mailgun">Mailgun</option>
+              <option value="ses">Amazon SES</option>
+              <option value="log">Log (dev only)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">SMTP Host</label>
+            <input v-model="mailSettings.mail_host" type="text" placeholder="smtp.example.com" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Port</label>
+            <input v-model="mailSettings.mail_port" type="number" placeholder="587" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Encryption</label>
+            <select v-model="mailSettings.mail_encryption" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none">
+              <option value="tls">TLS (STARTTLS)</option>
+              <option value="ssl">SSL</option>
+              <option value="">None</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Username</label>
+            <input v-model="mailSettings.mail_username" type="text" placeholder="you@example.com" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
+            <input v-model="mailSettings.mail_password" type="password" placeholder="••••••••" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">From Address</label>
+            <input v-model="mailSettings.mail_from_address" type="email" placeholder="noreply@voltexahub.com" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-1">From Name</label>
+            <input v-model="mailSettings.mail_from_name" type="text" placeholder="VoltexaHub" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Settings apply immediately — no server restart needed. Leave host empty to use .env defaults.</p>
+      </div>
+
     </template>
   </div>
 </template>
