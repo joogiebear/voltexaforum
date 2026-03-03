@@ -94,6 +94,16 @@ onBeforeUnmount(() => {
 .markdown-content :deep(hr) { border-color: #374151; margin: 1rem 0; }
 .markdown-content :deep(img) { max-width: 100%; border-radius: 0.5rem; }
 
+/* s9e/TextFormatter emoji images — keep them inline sized */
+.markdown-content :deep(img.emoji) {
+  display: inline;
+  height: 1.2em;
+  width: 1.2em;
+  vertical-align: -0.2em;
+  margin: 0;
+  border-radius: 0;
+}
+
 /* BBCode spoiler */
 .markdown-content :deep(.spoiler-content) {
   background: #1f2937;
