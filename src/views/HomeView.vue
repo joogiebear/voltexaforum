@@ -204,10 +204,11 @@ const filteredGames = computed(() => {
         </div>
       </main>
 
-      <!-- Right sidebar: Usergroup Legend -->
-      <aside class="lg:w-48 shrink-0 flex flex-col gap-4">
-        <UsergroupLegend :is-dark="isDark" />
-      </aside>
+    </div>
+
+    <!-- Usergroup Legend -->
+    <div v-if="!loading && !error" class="mt-6">
+      <UsergroupLegend :is-dark="isDark" />
     </div>
 
     <!-- Online Users Widget -->

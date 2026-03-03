@@ -32,22 +32,24 @@ function groupLabel(role) {
     class="rounded-xl p-4 transition-colors duration-300"
     :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'"
   >
-    <h3
-      class="text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5"
-      :class="isDark ? 'text-gray-400' : 'text-gray-500'"
-    >
-      <i class="fa-solid fa-users"></i>
-      Groups
-    </h3>
-    <div class="space-y-2">
-      <div v-for="role in groups" :key="role" class="flex items-center gap-2">
-        <span
-          class="w-2.5 h-2.5 rounded-full shrink-0"
-          :style="{ backgroundColor: groupColor(role) }"
-        ></span>
-        <span class="text-sm font-medium" :style="{ color: groupColor(role) }">
-          {{ groupLabel(role) }}
-        </span>
+    <div class="flex items-center gap-4 flex-wrap">
+      <span
+        class="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 shrink-0"
+        :class="isDark ? 'text-gray-400' : 'text-gray-500'"
+      >
+        <i class="fa-solid fa-users"></i>
+        Groups
+      </span>
+      <div class="flex items-center gap-4 flex-wrap">
+        <div v-for="role in groups" :key="role" class="flex items-center gap-1.5">
+          <span
+            class="w-2.5 h-2.5 rounded-full shrink-0"
+            :style="{ backgroundColor: groupColor(role) }"
+          ></span>
+          <span class="text-sm font-medium" :style="{ color: groupColor(role) }">
+            {{ groupLabel(role) }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
