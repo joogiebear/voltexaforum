@@ -8,9 +8,30 @@ const toast = useToastStore()
 const router = useRouter()
 const plugins = ref([])
 const loading = ref(true)
+const showUploadModal = ref(false)
+const isDragging = ref(false)
 
 const installedPlugins = computed(() => plugins.value.filter(p => p.installed))
 const availablePlugins = computed(() => plugins.value.filter(p => !p.installed))
+
+function onDragOver(e) { e.preventDefault(); isDragging.value = true }
+function onDragLeave() { isDragging.value = false }
+function onDrop(e) {
+  e.preventDefault(); isDragging.value = false
+  const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.zip'))
+  if (!files.length) { toast.error('Only .zip files are accepted'); return }
+  toast.error('Plugin zip upload is not yet connected to a backend.')
+}
+function onFileSelect(e) {
+  const files = Array.from(e.target.files).filter(f => f.name.endsWith('.zip'))
+  if (!files.length) { toast.error('Only .zip files are accepted'); return }
+  toast.error('Plugin zip upload is not yet connected to a backend.')
+}
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
 
 const pluginAdminPages = {
   announcements: '/admin/plugins/announcements',
@@ -82,6 +103,12 @@ onMounted(fetchPlugins)
           {{ installedPlugins.length }} installed
         </span>
       </div>
+      <button
+        class="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-lg transition-colors"
+        @click="showUploadModal = true"
+      >
+        <i class="fa-solid fa-upload mr-1.5"></i> Upload Plugin
+      </button>
     </div>
 
     <!-- Loading skeleton -->
@@ -184,5 +211,42 @@ onMounted(fetchPlugins)
         </div>
       </div>
     </div>
+
+    <!-- Upload Plugin Modal -->
+    <Teleport to="body">
+      <div v-if="showUploadModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60" @click="showUploadModal = false"></div>
+        <div class="relative bg-gray-800 rounded-xl border border-gray-700/50 w-full max-w-lg p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold text-white">Upload Plugin</h3>
+            <button class="text-gray-400 hover:text-white transition-colors" @click="showUploadModal = false">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div
+            class="rounded-xl border-2 border-dashed p-10 text-center transition-colors cursor-pointer"
+            :class="isDragging ? 'border-violet-500 bg-violet-500/5' : 'border-gray-600 hover:border-gray-500'"
+            @dragover="onDragOver"
+            @dragleave="onDragLeave"
+            @drop="onDrop"
+            @click="$refs.fileInput.click()"
+          >
+            <input ref="fileInput" type="file" accept=".zip" multiple class="hidden" @change="onFileSelect" />
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" :class="isDragging ? 'bg-violet-500/20' : 'bg-gray-700/50'">
+                <i class="fa-solid fa-cloud-arrow-up text-2xl" :class="isDragging ? 'text-violet-400' : 'text-gray-500'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-medium" :class="isDragging ? 'text-violet-300' : 'text-gray-300'">
+                  {{ isDragging ? 'Drop plugin here' : 'Drag & drop a .zip plugin file' }}
+                </p>
+                <p class="text-xs text-gray-500 mt-1">or click to browse</p>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 text-center">Plugin must be a <code class="text-gray-400">.zip</code> containing a valid <code class="text-gray-400">plugin.json</code>. Backend upload coming soon.</p>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

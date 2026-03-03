@@ -68,7 +68,6 @@ const routes = [
       { path: 'appearance/custom-code', name: 'AdminAppearanceCustomCode', component: () => import('../views/admin/appearance/AdminAppearanceCustomCode.vue'), meta: { title: 'Custom CSS/JS' } },
       // Plugins
       { path: 'plugins', name: 'AdminPlugins', component: () => import('../views/admin/AdminPlugins.vue'), meta: { title: 'Plugins' } },
-      { path: 'plugins/upload', name: 'AdminPluginsUpload', component: () => import('../views/admin/plugins/AdminPluginsUpload.vue'), meta: { title: 'Upload Plugin' } },
       { path: 'plugins/announcements', name: 'AdminAnnouncementsPlugin', component: () => import('../views/admin/plugins/AdminAnnouncementsPlugin.vue'), meta: { title: 'Announcements Plugin' } },
       // Settings
       { path: 'settings', redirect: '/admin/settings/general' },

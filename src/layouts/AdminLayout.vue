@@ -72,8 +72,7 @@ const navSections = [
   {
     label: 'Plugins',
     items: [
-      { to: '/admin/plugins', label: 'Installed', icon: 'fa-solid fa-puzzle-piece' },
-      { to: '/admin/plugins/upload', label: 'Upload', icon: 'fa-solid fa-upload' },
+      { to: '/admin/plugins', label: 'Plugins', icon: 'fa-solid fa-puzzle-piece' },
     ],
   },
   {
