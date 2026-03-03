@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getAdminConfig, updateAdminConfig } from '../../services/api'
+import { getAdminConfig, updateAdminConfig, testAdminEmail } from '../../services/api'
 import { useToastStore } from '../../stores/toast'
 
 const toast = useToastStore()
@@ -125,6 +125,22 @@ function testConnection(server) {
 }
 
 onMounted(fetchConfig)
+const testingEmail = ref(false)
+const testEmailStatus = ref(null)
+
+async function sendTestEmail() {
+  testingEmail.value = true
+  testEmailStatus.value = null
+  try {
+    const res = await testAdminEmail()
+    testEmailStatus.value = { ok: true, msg: res.data.message }
+  } catch (e) {
+    testEmailStatus.value = { ok: false, msg: e.response?.data?.message || 'Failed to send' }
+  } finally {
+    testingEmail.value = false
+  }
+}
+
 function saveMailSettings() {
   const config = { ...mailSettings.value }
   updateAdminConfig({ config })
@@ -337,9 +353,14 @@ function saveMailSettings() {
       <div class="bg-gray-800 rounded-xl p-5">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-semibold text-white"><i class="fa-solid fa-envelope mr-2 text-violet-400"></i>Email / SMTP</h3>
-          <button @click="saveMailSettings" :disabled="saving.mail" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
-            {{ saving.mail ? 'Saving...' : 'Save' }}
-          </button>
+          <div class="flex items-center gap-2">
+            <button @click="sendTestEmail" :disabled="testingEmail" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-gray-200 text-sm font-medium rounded-lg transition-colors">
+              <i class="fa-solid fa-paper-plane mr-1.5"></i>{{ testingEmail ? 'Sending...' : 'Send Test' }}
+            </button>
+            <button @click="saveMailSettings" :disabled="saving.mail" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
+              {{ saving.mail ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -385,6 +406,9 @@ function saveMailSettings() {
           </div>
         </div>
         <p class="text-xs text-gray-500 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Settings apply immediately — no server restart needed. Leave host empty to use .env defaults.</p>
+        <div v-if="testEmailStatus" class="mt-2 text-xs px-3 py-2 rounded-lg" :class="testEmailStatus.ok ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'">
+          <i :class="testEmailStatus.ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'" class="mr-1"></i>{{ testEmailStatus.msg }}
+        </div>
       </div>
 
     </template>
