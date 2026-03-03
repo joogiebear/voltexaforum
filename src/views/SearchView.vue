@@ -80,7 +80,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
     <!-- Search input -->
     <div class="mb-6">
       <form @submit.prevent="handleSearch" class="flex gap-3">

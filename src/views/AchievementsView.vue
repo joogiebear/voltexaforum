@@ -68,7 +68,7 @@ function getProgress(ach) {
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
     <!-- Loading -->
     <div v-if="loading" class="space-y-4">
       <div class="h-8 rounded w-1/4 animate-pulse" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'" />
