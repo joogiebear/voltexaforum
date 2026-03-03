@@ -13,6 +13,10 @@ const isDark = inject('isDark')
 const textarea = ref(null)
 const previewing = ref(false)
 
+// BBCode dropdowns
+const showColorPicker = ref(false)
+const showSizePicker = ref(false)
+
 const renderedPreview = computed(() => {
   if (!props.modelValue) return ''
   return sanitize(marked.parse(props.modelValue))
@@ -80,6 +84,31 @@ function insertHR() {
   emit('update:modelValue', newVal)
 }
 
+// BBCode insert helpers
+function insertBBColor(color) {
+  wrap(`[color=${color}]`, '[/color]', 'colored text')
+  showColorPicker.value = false
+}
+
+function insertBBSize(size) {
+  wrap(`[size=${size}]`, '[/size]', 'sized text')
+  showSizePicker.value = false
+}
+
+function insertBBSpoiler() {
+  wrap('[spoiler]', '[/spoiler]', 'hidden text')
+}
+
+function insertBBImage() {
+  const url = prompt('Enter image URL:')
+  if (url) wrap('[img]', '[/img]', url)
+}
+
+function insertBBVideo() {
+  const url = prompt('Enter YouTube or Twitch URL:')
+  if (url) wrap('[media]', '[/media]', url)
+}
+
 const buttons = [
   { label: 'B', title: 'Bold', action: insertBold, classes: 'font-bold' },
   { label: 'I', title: 'Italic', action: insertItalic, classes: 'italic' },
@@ -91,6 +120,23 @@ const buttons = [
   { icon: 'fa-solid fa-list-ol', title: 'Ordered List', action: insertOL },
   { label: '---', title: 'Horizontal Rule', action: insertHR, classes: 'text-xs' },
 ]
+
+const bbColors = [
+  { name: 'Red', value: 'red', bg: 'bg-red-500' },
+  { name: 'Blue', value: 'blue', bg: 'bg-blue-500' },
+  { name: 'Green', value: 'green', bg: 'bg-green-500' },
+  { name: 'Orange', value: 'orange', bg: 'bg-orange-500' },
+  { name: 'Purple', value: 'purple', bg: 'bg-purple-500' },
+  { name: 'Pink', value: 'pink', bg: 'bg-pink-500' },
+  { name: 'Gray', value: 'gray', bg: 'bg-gray-400' },
+]
+
+const bbSizes = [
+  { label: 'Small', value: '10' },
+  { label: 'Normal', value: '14' },
+  { label: 'Large', value: '18' },
+  { label: 'Huge', value: '24' },
+]
 </script>
 
 <template>
@@ -100,6 +146,7 @@ const buttons = [
       class="flex items-center gap-1 px-2 py-1.5 rounded-t-lg border border-b-0 flex-wrap"
       :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'"
     >
+      <!-- Markdown buttons -->
       <button
         v-for="btn in buttons"
         :key="btn.title"
@@ -111,6 +158,99 @@ const buttons = [
       >
         <i v-if="btn.icon" :class="btn.icon"></i>
         <span v-else :class="btn.classes">{{ btn.label }}</span>
+      </button>
+
+      <!-- Divider -->
+      <div class="w-px h-6 mx-1" :class="isDark ? 'bg-gray-600' : 'bg-gray-300'"></div>
+
+      <!-- BBCode: Color picker -->
+      <div class="relative">
+        <button
+          type="button"
+          @click="showColorPicker = !showColorPicker; showSizePicker = false"
+          title="Text Color"
+          class="h-8 px-2 flex items-center gap-1 rounded transition-colors text-xs font-medium"
+          :class="isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'"
+        >
+          <i class="fa-solid fa-palette"></i>
+        </button>
+        <div
+          v-if="showColorPicker"
+          class="absolute top-full left-0 mt-1 z-50 p-2 rounded-lg border shadow-lg flex gap-1.5"
+          :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+        >
+          <button
+            v-for="c in bbColors"
+            :key="c.value"
+            type="button"
+            @click="insertBBColor(c.value)"
+            :title="c.name"
+            class="w-6 h-6 rounded-full border-2 border-transparent hover:border-white transition-colors"
+            :class="c.bg"
+          />
+        </div>
+      </div>
+
+      <!-- BBCode: Size picker -->
+      <div class="relative">
+        <button
+          type="button"
+          @click="showSizePicker = !showSizePicker; showColorPicker = false"
+          title="Text Size"
+          class="h-8 px-2 flex items-center gap-1 rounded transition-colors text-xs font-medium"
+          :class="isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'"
+        >
+          <i class="fa-solid fa-text-height"></i>
+        </button>
+        <div
+          v-if="showSizePicker"
+          class="absolute top-full left-0 mt-1 z-50 rounded-lg border shadow-lg py-1 min-w-[100px]"
+          :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+        >
+          <button
+            v-for="s in bbSizes"
+            :key="s.value"
+            type="button"
+            @click="insertBBSize(s.value)"
+            class="w-full text-left px-3 py-1.5 text-xs transition-colors"
+            :class="isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'"
+          >
+            {{ s.label }} ({{ s.value }}px)
+          </button>
+        </div>
+      </div>
+
+      <!-- BBCode: Spoiler -->
+      <button
+        type="button"
+        @click="insertBBSpoiler"
+        title="Spoiler"
+        class="h-8 px-2 flex items-center gap-1 rounded transition-colors text-xs font-medium"
+        :class="isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'"
+      >
+        <i class="fa-solid fa-eye-slash"></i>
+      </button>
+
+      <!-- BBCode: Image -->
+      <button
+        type="button"
+        @click="insertBBImage"
+        title="Image"
+        class="h-8 px-2 flex items-center gap-1 rounded transition-colors text-xs font-medium"
+        :class="isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'"
+      >
+        <i class="fa-solid fa-image"></i>
+      </button>
+
+      <!-- BBCode: Video -->
+      <button
+        type="button"
+        @click="insertBBVideo"
+        title="Video (YouTube/Twitch)"
+        class="h-8 px-2 flex items-center gap-1 rounded transition-colors text-xs font-medium"
+        :class="isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'"
+      >
+        <i class="fa-solid fa-video"></i>
       </button>
 
       <div class="flex-1" />

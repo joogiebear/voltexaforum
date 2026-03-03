@@ -1,88 +1,108 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getAdminThreads, pinThread, lockThread, solveThread, adminDeletePost } from '../../services/api'
+import { ref, computed, onMounted } from 'vue'
+import { getAdminReports, updateAdminReport, getAdminThreads, pinThread, lockThread, solveThread, adminDeletePost } from '../../services/api'
 import { useToastStore } from '../../stores/toast'
-import UserAvatar from '../../components/UserAvatar.vue'
 
 const toast = useToastStore()
 const loading = ref(true)
-const error = ref(null)
 
-const activeTab = ref('threads')
-const threads = ref([])
+// Reports
+const reportTab = ref('pending')
+const reports = ref({ pending: [], reviewed: [], dismissed: [] })
 
-async function fetchThreads() {
+async function fetchReports(status) {
+  try {
+    const res = await getAdminReports({ status })
+    reports.value[status] = res.data.data || res.data || []
+  } catch {}
+}
+
+async function fetchAllReports() {
   loading.value = true
-  error.value = null
+  await Promise.all([
+    fetchReports('pending'),
+    fetchReports('reviewed'),
+    fetchReports('dismissed'),
+  ])
+  loading.value = false
+}
+
+async function markReviewed(report) {
+  const idx = reports.value.pending.findIndex(r => r.id === report.id)
+  if (idx !== -1) reports.value.pending.splice(idx, 1)
+  report.status = 'reviewed'
+  reports.value.reviewed.unshift(report)
   try {
-    const res = await getAdminThreads()
-    const d = res.data
-    threads.value = d.data || d || []
+    await updateAdminReport(report.id, { status: 'reviewed' })
+    toast.show('Report marked as reviewed')
   } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to load threads'
-    toast.show(error.value, 'error')
-  } finally {
-    loading.value = false
+    // rollback
+    reports.value.reviewed = reports.value.reviewed.filter(r => r.id !== report.id)
+    report.status = 'pending'
+    reports.value.pending.splice(idx, 0, report)
+    toast.show(e.response?.data?.message || 'Failed to update report', 'error')
   }
 }
 
-async function doPin(thread) {
+async function dismissReport(report) {
+  const sourceTab = report.status === 'reviewed' ? 'reviewed' : 'pending'
+  const idx = reports.value[sourceTab].findIndex(r => r.id === report.id)
+  if (idx !== -1) reports.value[sourceTab].splice(idx, 1)
+  report.status = 'dismissed'
+  reports.value.dismissed.unshift(report)
   try {
-    await pinThread(thread.id)
-    thread.is_pinned = !thread.is_pinned
-    toast.show(thread.is_pinned ? 'Thread pinned' : 'Thread unpinned')
+    await updateAdminReport(report.id, { status: 'dismissed' })
+    toast.show('Report dismissed')
   } catch (e) {
-    toast.show(e.response?.data?.message || 'Failed to pin thread', 'error')
+    reports.value.dismissed = reports.value.dismissed.filter(r => r.id !== report.id)
+    report.status = sourceTab
+    reports.value[sourceTab].splice(idx, 0, report)
+    toast.show(e.response?.data?.message || 'Failed to dismiss report', 'error')
   }
 }
 
-async function doLock(thread) {
-  try {
-    await lockThread(thread.id)
-    thread.is_locked = !thread.is_locked
-    toast.show(thread.is_locked ? 'Thread locked' : 'Thread unlocked')
-  } catch (e) {
-    toast.show(e.response?.data?.message || 'Failed to lock thread', 'error')
-  }
+const currentReports = computed(() => reports.value[reportTab.value] || [])
+const pendingCount = computed(() => reports.value.pending.length)
+
+function truncate(text, len = 80) {
+  if (!text) return '—'
+  return text.length > len ? text.slice(0, len) + '...' : text
 }
 
-async function doSolve(thread) {
-  try {
-    await solveThread(thread.id)
-    thread.is_solved = !thread.is_solved
-    toast.show(thread.is_solved ? 'Thread marked as solved' : 'Thread unmarked')
-  } catch (e) {
-    toast.show(e.response?.data?.message || 'Failed to update thread', 'error')
-  }
+function formatDate(d) {
+  if (!d) return '—'
+  return new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-async function doDeletePost(postId) {
-  if (!confirm('Delete this post?')) return
-  try {
-    await adminDeletePost(postId)
-    toast.show('Post deleted')
-    fetchThreads()
-  } catch (e) {
-    toast.show(e.response?.data?.message || 'Failed to delete post', 'error')
-  }
-}
-
-onMounted(fetchThreads)
+onMounted(fetchAllReports)
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Error -->
-    <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center justify-between">
-      <span class="text-sm text-red-400">{{ error }}</span>
-      <button @click="fetchThreads" class="px-3 py-1.5 bg-red-500/20 text-red-400 text-xs font-medium rounded-lg hover:bg-red-500/30 transition-colors">Retry</button>
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-700">
+      <button
+        v-for="tab in ['pending', 'reviewed', 'dismissed']"
+        :key="tab"
+        @click="reportTab = tab"
+        class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px capitalize relative"
+        :class="reportTab === tab ? 'text-violet-400 border-violet-400' : 'text-gray-500 border-transparent hover:text-gray-300'"
+      >
+        {{ tab }}
+        <span
+          v-if="tab === 'pending' && pendingCount > 0"
+          class="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded-full bg-red-500 text-white"
+        >
+          {{ pendingCount }}
+        </span>
+      </button>
     </div>
 
-    <!-- Threads Table -->
+    <!-- Reports Table -->
     <div class="bg-gray-800 rounded-xl border border-gray-700/50 overflow-hidden">
       <div class="px-5 py-4 border-b border-gray-700/50 flex items-center justify-between">
-        <h2 class="text-base font-semibold text-white">Thread Moderation</h2>
-        <span class="text-xs text-gray-500">{{ threads.length }} threads</span>
+        <h2 class="text-base font-semibold text-white">Reports</h2>
+        <span class="text-xs text-gray-500">{{ currentReports.length }} reports</span>
       </div>
 
       <!-- Loading -->
@@ -94,51 +114,60 @@ onMounted(fetchThreads)
         </div>
       </template>
 
-      <div v-else class="divide-y divide-gray-700/50">
-        <div
-          v-for="thread in threads"
-          :key="thread.id"
-          class="flex flex-col sm:flex-row sm:items-center justify-between px-5 py-4 gap-3 hover:bg-gray-700/30 transition-colors"
-        >
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-sm font-medium text-gray-200 truncate">{{ thread.title }}</span>
-              <span v-if="thread.is_pinned" class="px-1.5 py-0.5 bg-amber-500/10 text-amber-400 rounded text-xs">Pinned</span>
-              <span v-if="thread.is_locked" class="px-1.5 py-0.5 bg-red-500/10 text-red-400 rounded text-xs">Locked</span>
-              <span v-if="thread.is_solved" class="px-1.5 py-0.5 bg-green-500/10 text-green-400 rounded text-xs">Solved</span>
-            </div>
-            <div class="text-xs text-gray-500 mt-1">
-              by {{ thread.author?.username || thread.author }} &middot; {{ thread.forum?.name || thread.forum }} &middot; {{ thread.reply_count || thread.replies || 0 }} replies
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button
-              @click="doPin(thread)"
-              class="px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors"
-              :class="thread.is_pinned ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'"
-            >
-              📌 {{ thread.is_pinned ? 'Unpin' : 'Pin' }}
-            </button>
-            <button
-              @click="doLock(thread)"
-              class="px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors"
-              :class="thread.is_locked ? 'bg-red-500/20 text-red-400' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'"
-            >
-              🔒 {{ thread.is_locked ? 'Unlock' : 'Lock' }}
-            </button>
-            <button
-              @click="doSolve(thread)"
-              class="px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors"
-              :class="thread.is_solved ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'"
-            >
-              ✅ {{ thread.is_solved ? 'Unsolve' : 'Solve' }}
-            </button>
-          </div>
-        </div>
-
-        <div v-if="!threads.length" class="px-5 py-12 text-center text-sm text-gray-500">
-          No threads found
-        </div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead>
+            <tr class="border-b border-gray-700">
+              <th class="px-5 pb-3 pt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Type</th>
+              <th class="px-5 pb-3 pt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Content</th>
+              <th class="px-5 pb-3 pt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reported By</th>
+              <th class="px-5 pb-3 pt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reason</th>
+              <th class="px-5 pb-3 pt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+              <th class="px-5 pb-3 pt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody v-if="currentReports.length" class="divide-y divide-gray-700/50">
+            <tr v-for="report in currentReports" :key="report.id" class="hover:bg-gray-700/30 transition-colors">
+              <td class="px-5 py-3">
+                <span
+                  class="px-2 py-0.5 rounded text-xs font-semibold"
+                  :class="report.reportable_type?.includes('Thread') ? 'bg-blue-500/10 text-blue-400' : 'bg-violet-500/10 text-violet-400'"
+                >
+                  {{ report.reportable_type?.includes('Thread') ? 'Thread' : 'Post' }}
+                </span>
+              </td>
+              <td class="px-5 py-3 text-gray-300 max-w-xs">{{ truncate(report.reportable?.body || report.reportable?.title || report.content_preview) }}</td>
+              <td class="px-5 py-3 text-gray-400">{{ report.reporter?.username || report.reported_by || '—' }}</td>
+              <td class="px-5 py-3 text-gray-400 max-w-xs">{{ truncate(report.reason, 60) }}</td>
+              <td class="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">{{ formatDate(report.created_at) }}</td>
+              <td class="px-5 py-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button
+                    v-if="reportTab !== 'reviewed'"
+                    @click="markReviewed(report)"
+                    class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-colors"
+                  >
+                    Reviewed
+                  </button>
+                  <button
+                    v-if="reportTab !== 'dismissed'"
+                    @click="dismissReport(report)"
+                    class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-gray-600/30 text-gray-400 hover:bg-gray-600/50 transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="6" class="px-5 py-12 text-center text-sm text-gray-500">
+                No {{ reportTab }} reports
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

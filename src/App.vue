@@ -3,6 +3,7 @@ import { provide, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from './composables/useTheme'
 import { useForumStore } from './stores/forum'
+import { getCustomCode } from './services/api'
 import AppHeader from './components/AppHeader.vue'
 import AppFooter from './components/AppFooter.vue'
 import AppToast from './components/AppToast.vue'
@@ -16,8 +17,34 @@ provide('toggleTheme', toggle)
 
 const isAdmin = computed(() => route.path.startsWith('/admin'))
 
+async function injectCustomCode() {
+  try {
+    const res = await getCustomCode()
+    const data = res.data.data || res.data
+    if (data.custom_css) {
+      const existing = document.getElementById('vh-custom-css')
+      if (existing) existing.remove()
+      const style = document.createElement('style')
+      style.id = 'vh-custom-css'
+      style.textContent = data.custom_css
+      document.head.appendChild(style)
+    }
+    if (data.custom_js) {
+      const existing = document.getElementById('vh-custom-js')
+      if (existing) existing.remove()
+      const script = document.createElement('script')
+      script.id = 'vh-custom-js'
+      script.textContent = data.custom_js
+      document.body.appendChild(script)
+    }
+  } catch {}
+}
+
 // Load forum config once on app boot — makes it available on any page/refresh
-onMounted(() => forumStore.fetchConfig())
+onMounted(() => {
+  forumStore.fetchConfig()
+  injectCustomCode()
+})
 
 // Apply accent color from config dynamically
 watch(() => forumStore.config?.accent_color, (color) => {

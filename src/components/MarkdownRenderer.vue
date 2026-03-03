@@ -1,12 +1,14 @@
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, inject, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { marked } from 'marked'
 
 const props = defineProps({
   content: { type: String, default: '' },
+  renderedContent: { type: String, default: '' },
 })
 
 const isDark = inject('isDark')
+const container = ref(null)
 
 function sanitize(html) {
   return html
@@ -15,13 +17,36 @@ function sanitize(html) {
 }
 
 const rendered = computed(() => {
+  if (props.renderedContent) return props.renderedContent
   if (!props.content) return ''
   return sanitize(marked.parse(props.content))
+})
+
+function bindSpoilers() {
+  if (!container.value) return
+  container.value.querySelectorAll('.spoiler-content').forEach((el) => {
+    el.removeEventListener('click', toggleSpoiler)
+    el.addEventListener('click', toggleSpoiler)
+  })
+}
+
+function toggleSpoiler(e) {
+  e.currentTarget.classList.toggle('revealed')
+}
+
+watch(rendered, () => nextTick(bindSpoilers))
+
+onBeforeUnmount(() => {
+  if (!container.value) return
+  container.value.querySelectorAll('.spoiler-content').forEach((el) => {
+    el.removeEventListener('click', toggleSpoiler)
+  })
 })
 </script>
 
 <template>
   <div
+    ref="container"
     class="markdown-content prose max-w-none text-sm leading-relaxed"
     :class="isDark ? 'text-gray-300' : 'text-gray-700'"
     v-html="rendered"
@@ -68,4 +93,18 @@ const rendered = computed(() => {
 .markdown-content :deep(li) { margin-bottom: 0.25rem; }
 .markdown-content :deep(hr) { border-color: #374151; margin: 1rem 0; }
 .markdown-content :deep(img) { max-width: 100%; border-radius: 0.5rem; }
+
+/* BBCode spoiler */
+.markdown-content :deep(.spoiler-content) {
+  background: #1f2937;
+  color: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 4px;
+  user-select: none;
+}
+.markdown-content :deep(.spoiler-content:hover),
+.markdown-content :deep(.spoiler-content.revealed) {
+  color: inherit;
+}
 </style>

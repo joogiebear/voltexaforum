@@ -183,3 +183,23 @@ export const getStaff = () => api.get('/staff')
 export const getForumPermissions = (forumId) => api.get(`/admin/forums/${forumId}/permissions`)
 export const updateForumPermissions = (forumId, data) => api.put(`/admin/forums/${forumId}/permissions`, data)
 export const testAdminEmail = () => api.post('/admin/config/test-email')
+
+// Reports
+export const reportPost = (data) => api.post('/reports', data)
+export const getAdminReports = (params) => api.get('/admin/reports', { params })
+export const updateAdminReport = (id, data) => api.put(`/admin/reports/${id}`, data)
+
+// Thread Subscriptions
+export const toggleThreadSubscription = (threadId) => api.post(`/threads/${threadId}/subscribe`)
+export const getThreadSubscription = (threadId) => api.get(`/threads/${threadId}/subscription`)
+
+// Admin Content
+export const getAdminContentThreads = (params) => api.get('/admin/content/threads', { params })
+export const getAdminContentPosts = (params) => api.get('/admin/content/posts', { params })
+
+// Custom Code (public)
+export const getCustomCode = () => api.get('/public/custom-code')
+
+// Email Verification
+export const verifyEmail = (params) => api.post('/email/verify', params)
+export const resendVerification = () => api.post('/email/resend')

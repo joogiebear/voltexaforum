@@ -3,7 +3,8 @@ import { inject, ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useForumStore } from '../stores/forum'
-import { getThread, getThreadPosts, createPost, updatePost, updateThread, pinThread, lockThread, solveThread, adminDeletePost, deleteThread, moveThread, likeThread as likeThreadApi } from '../services/api'
+import { getThread, getThreadPosts, createPost, updatePost, updateThread, pinThread, lockThread, solveThread, adminDeletePost, deleteThread, moveThread, likeThread as likeThreadApi, reportPost, toggleThreadSubscription, getThreadSubscription } from '../services/api'
+import { useToastStore } from '../stores/toast'
 import UserAvatar from '../components/UserAvatar.vue'
 import MarkdownEditor from '../components/MarkdownEditor.vue'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
@@ -42,9 +43,20 @@ const liked = ref(false)
 const likesCount = ref(0)
 const likers = ref([])
 
+// Report state
+const showReportModal = ref(false)
+const reportPostId = ref(null)
+const reportReason = ref('')
+const reportSubmitting = ref(false)
+
+// Subscription state
+const subscribed = ref(false)
+const subLoading = ref(false)
+
 // Moderation state
 const showMoveDropdown = ref(false)
 const modActionLoading = ref(null)
+const toast = useToastStore()
 
 const participants = computed(() => {
   const names = new Set()
@@ -221,6 +233,41 @@ async function handleLike() {
   } catch {}
 }
 
+function openReportModal(postId) {
+  reportPostId.value = postId
+  reportReason.value = ''
+  showReportModal.value = true
+}
+
+async function submitReport() {
+  if (!reportReason.value.trim()) return
+  reportSubmitting.value = true
+  try {
+    await reportPost({ post_id: reportPostId.value, reason: reportReason.value })
+    toast.show('Report submitted')
+    showReportModal.value = false
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Failed to submit report', 'error')
+  } finally {
+    reportSubmitting.value = false
+  }
+}
+
+async function toggleSubscribe() {
+  if (subLoading.value) return
+  subLoading.value = true
+  const prev = subscribed.value
+  subscribed.value = !prev
+  try {
+    const res = await toggleThreadSubscription(route.params.id)
+    subscribed.value = res.data.subscribed ?? res.data.data?.subscribed ?? !prev
+  } catch {
+    subscribed.value = prev
+  } finally {
+    subLoading.value = false
+  }
+}
+
 async function loadThread() {
   loading.value = true
   error.value = null
@@ -238,6 +285,12 @@ async function loadThread() {
     likesCount.value = threadData.likes_count ?? 0
     posts.value = postsRes.data.data
     pagination.value = postsRes.data.meta || null
+    if (authStore.isLoggedIn) {
+      try {
+        const subRes = await getThreadSubscription(route.params.id)
+        subscribed.value = subRes.data.subscribed ?? subRes.data.data?.subscribed ?? false
+      } catch {}
+    }
   } catch (e) {
     error.value = 'Failed to load thread. Please try again.'
   } finally {
@@ -353,6 +406,21 @@ onMounted(loadThread)
           </span>
           liked this
         </div>
+      </div>
+
+      <!-- Subscribe button -->
+      <div v-if="authStore.isLoggedIn" class="flex items-center gap-2 mb-4">
+        <button
+          @click="toggleSubscribe"
+          :disabled="subLoading"
+          class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+          :class="subscribed
+            ? 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20'
+            : isDark ? 'bg-gray-800 text-gray-400 hover:text-violet-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-400 hover:text-violet-400 hover:bg-gray-200'"
+        >
+          <i :class="subscribed ? 'fa-solid fa-bell' : 'fa-regular fa-bell'"></i>
+          {{ subscribed ? 'Subscribed' : 'Subscribe' }}
+        </button>
       </div>
 
       <!-- Mod toolbar -->
@@ -531,6 +599,15 @@ onMounted(loadThread)
                   >
                     <i class="fa-solid fa-trash"></i>
                   </button>
+                  <button
+                    v-if="authStore.isLoggedIn && authStore.user?.id !== post.user_id"
+                    @click="openReportModal(post.id)"
+                    class="text-xs px-2 py-1 rounded transition-colors"
+                    :class="isDark ? 'text-gray-400 hover:text-orange-400 hover:bg-gray-800' : 'text-gray-400 hover:text-orange-500 hover:bg-gray-100'"
+                    title="Report"
+                  >
+                    <i class="fa-solid fa-flag"></i>
+                  </button>
                 </div>
               </div>
 
@@ -570,7 +647,7 @@ onMounted(loadThread)
 
               <!-- Display mode -->
               <template v-else>
-                <MarkdownRenderer :content="post.body" />
+                <MarkdownRenderer :content="post.body" :rendered-content="post.rendered_content" />
               </template>
             </div>
           </div>
@@ -637,5 +714,42 @@ onMounted(loadThread)
         </template>
       </div>
     </template>
+
+    <!-- Report Modal -->
+    <Teleport to="body">
+      <div v-if="showReportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60" @click="showReportModal = false"></div>
+        <div class="relative w-full max-w-md rounded-xl p-6 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+          <h3 class="text-lg font-semibold mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">Report Post</h3>
+          <textarea
+            v-model="reportReason"
+            rows="4"
+            maxlength="500"
+            placeholder="Describe the reason for reporting this post..."
+            class="w-full px-3 py-2 rounded-lg border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-purple-accent resize-none"
+            :class="isDark ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'"
+          ></textarea>
+          <div class="flex items-center justify-between mt-2">
+            <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">{{ reportReason.length }}/500</span>
+            <div class="flex gap-2">
+              <button
+                @click="showReportModal = false"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                :class="isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'"
+              >
+                Cancel
+              </button>
+              <button
+                @click="submitReport"
+                :disabled="reportSubmitting || !reportReason.trim()"
+                class="px-4 py-2 bg-purple-accent hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {{ reportSubmitting ? 'Submitting...' : 'Submit Report' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

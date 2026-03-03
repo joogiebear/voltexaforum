@@ -39,6 +39,7 @@ const routes = [
   { path: '/register', name: 'Register', component: RegisterView },
   { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordView },
+  { path: '/verify-email', name: 'VerifyEmail', component: () => import('../views/EmailVerifyView.vue') },
 
   // Admin routes — lazy loaded
   {
