@@ -6,6 +6,7 @@ import { useForumStore } from './stores/forum'
 import AppHeader from './components/AppHeader.vue'
 import AppFooter from './components/AppFooter.vue'
 import AppToast from './components/AppToast.vue'
+import AnnouncementBanner from './components/AnnouncementBanner.vue'
 
 const route = useRoute()
 const { isDark, toggle } = useTheme()
@@ -37,6 +38,7 @@ watch(() => forumStore.config?.accent_color, (color) => {
     :class="isDark ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900 light'"
   >
     <AppHeader />
+    <AnnouncementBanner />
     <RouterView />
     <AppFooter />
   </div>

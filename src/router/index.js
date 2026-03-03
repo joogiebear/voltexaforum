@@ -69,6 +69,7 @@ const routes = [
       // Plugins
       { path: 'plugins', name: 'AdminPlugins', component: () => import('../views/admin/AdminPlugins.vue'), meta: { title: 'Plugins' } },
       { path: 'plugins/upload', name: 'AdminPluginsUpload', component: () => import('../views/admin/plugins/AdminPluginsUpload.vue'), meta: { title: 'Upload Plugin' } },
+      { path: 'plugins/announcements', name: 'AdminAnnouncementsPlugin', component: () => import('../views/admin/plugins/AdminAnnouncementsPlugin.vue'), meta: { title: 'Announcements Plugin' } },
       // Settings
       { path: 'settings', redirect: '/admin/settings/general' },
       { path: 'settings/general', name: 'AdminSettingsGeneral', component: () => import('../views/admin/settings/AdminSettingsGeneral.vue'), meta: { title: 'General Settings' } },

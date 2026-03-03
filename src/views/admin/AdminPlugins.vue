@@ -1,114 +1,181 @@
 <script setup>
-const pluginCapabilities = [
-  { icon: '📊', text: 'Register admin panel sections' },
-  { icon: '📌', text: 'Add nav menu items' },
-  { icon: '⚡', text: 'Hook into credit events' },
-  { icon: '🏪', text: 'Add store item types' },
-  { icon: '🏆', text: 'Add achievement triggers' },
-]
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getAdminPlugins, installPlugin, togglePlugin, uninstallPlugin } from '../../services/api'
+import { useToastStore } from '../../stores/toast'
 
-const codeExample = `// forum-plugin.js
-export default {
-  name: 'my-plugin',
-  version: '1.0.0',
+const toast = useToastStore()
+const router = useRouter()
+const plugins = ref([])
+const loading = ref(true)
 
-  // Register admin panel section
-  adminRoutes: [
-    {
-      path: '/admin/my-plugin',
-      component: () => import('./MyPluginAdmin.vue'),
-      meta: { title: 'My Plugin' },
-    },
-  ],
+const installedPlugins = computed(() => plugins.value.filter(p => p.installed))
+const availablePlugins = computed(() => plugins.value.filter(p => !p.installed))
 
-  // Add navigation items
-  navItems: [
-    { to: '/my-plugin', label: 'My Feature', icon: '🔌' },
-  ],
+const pluginAdminPages = {
+  announcements: '/admin/plugins/announcements',
+}
 
-  // Hook into credit events
-  hooks: {
-    onCreditEarn(user, amount, reason) {
-      // Handle credit earn event
-    },
-    onPurchase(user, item) {
-      // Handle purchase event
-    },
-  },
+async function fetchPlugins() {
+  loading.value = true
+  try {
+    const { data } = await getAdminPlugins()
+    plugins.value = data.data || []
+  } catch {
+    toast.error('Failed to load plugins.')
+  } finally {
+    loading.value = false
+  }
+}
 
-  // Register custom store item type
-  storeItemTypes: [
-    {
-      id: 'custom-command',
-      label: 'Custom Command',
-      onPurchase: (user, item) => {
-        // Execute custom delivery logic
-      },
-    },
-  ],
+async function doInstall(slug) {
+  try {
+    await installPlugin(slug)
+    toast.success('Plugin installed.')
+    await fetchPlugins()
+  } catch {
+    toast.error('Failed to install plugin.')
+  }
+}
 
-  // Register achievement triggers
-  achievementTriggers: [
-    {
-      id: 'plugin-action',
-      label: 'Plugin Action',
-      check: (user, target) => {
-        // Return true when achievement should unlock
-      },
-    },
-  ],
-}`
+async function doToggle(slug) {
+  try {
+    await togglePlugin(slug)
+    await fetchPlugins()
+  } catch {
+    toast.error('Failed to toggle plugin.')
+  }
+}
+
+async function doUninstall(slug) {
+  if (!confirm('Are you sure you want to uninstall this plugin?')) return
+  try {
+    await uninstallPlugin(slug)
+    toast.success('Plugin uninstalled.')
+    await fetchPlugins()
+  } catch {
+    toast.error('Failed to uninstall plugin.')
+  }
+}
+
+function configure(slug) {
+  const path = pluginAdminPages[slug]
+  if (path) router.push(path)
+}
+
+onMounted(fetchPlugins)
 </script>
 
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center gap-3">
-      <h2 class="text-lg font-semibold text-white">Plugin System</h2>
-      <span class="px-2.5 py-0.5 bg-amber-500/10 text-amber-400 rounded-full text-xs font-semibold">Coming Soon</span>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <h2 class="text-lg font-semibold text-white">Plugins</h2>
+        <span class="px-2.5 py-0.5 bg-violet-500/10 text-violet-400 rounded-full text-xs font-semibold">
+          {{ installedPlugins.length }} installed
+        </span>
+      </div>
     </div>
 
-    <!-- Explanation -->
-    <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-6 space-y-4">
-      <p class="text-sm text-gray-300">
-        The plugin system allows extending the forum with custom features, integrations, and automations.
-        Plugins can hook into the core platform to add functionality without modifying the base code.
-      </p>
+    <!-- Loading skeleton -->
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-for="i in 2" :key="i" class="bg-gray-800 rounded-xl border border-gray-700/50 p-5 animate-pulse">
+        <div class="h-5 bg-gray-700 rounded w-1/3 mb-3"></div>
+        <div class="h-4 bg-gray-700 rounded w-2/3 mb-4"></div>
+        <div class="h-8 bg-gray-700 rounded w-1/4"></div>
+      </div>
+    </div>
 
-      <h4 class="text-sm font-semibold text-white">What plugins will be able to do:</h4>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <!-- Available on disk (not installed) -->
+    <div v-if="!loading && availablePlugins.length" class="bg-gray-800 rounded-xl border border-gray-700/50 p-5 space-y-4">
+      <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-hard-drive text-gray-400 text-xs"></i>
+        Available on Disk
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
-          v-for="cap in pluginCapabilities"
-          :key="cap.text"
-          class="flex items-center gap-3 px-4 py-3 bg-gray-700/50 rounded-lg"
+          v-for="p in availablePlugins"
+          :key="p.slug"
+          class="bg-gray-700/40 rounded-lg border border-gray-600/40 p-4 flex flex-col gap-3"
         >
-          <span class="text-base">{{ cap.icon }}</span>
-          <span class="text-sm text-gray-300">{{ cap.text }}</span>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-white">{{ p.name }}</span>
+              <span class="text-xs text-gray-500">v{{ p.version }}</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">{{ p.description }}</p>
+            <p class="text-xs text-gray-500 mt-1">By {{ p.author }}</p>
+          </div>
+          <button
+            class="self-start px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium rounded-lg transition-colors"
+            @click="doInstall(p.slug)"
+          >
+            <i class="fa-solid fa-download mr-1"></i> Install
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Code example -->
-    <div class="bg-gray-800 rounded-xl border border-gray-700/50 overflow-hidden">
-      <div class="px-5 py-3 border-b border-gray-700/50 flex items-center justify-between">
-        <h4 class="text-sm font-semibold text-white">Plugin Registration API (Preview)</h4>
-        <span class="text-xs text-gray-500 font-mono">forum-plugin.js</span>
-      </div>
-      <pre class="p-5 overflow-x-auto text-sm leading-relaxed"><code class="text-gray-300">{{ codeExample }}</code></pre>
-    </div>
+    <!-- Installed Plugins -->
+    <div v-if="!loading" class="space-y-4">
+      <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-puzzle-piece text-gray-400 text-xs"></i>
+        Installed Plugins
+      </h3>
 
-    <!-- Installed Plugins empty state -->
-    <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-6 space-y-4">
-      <div class="flex items-center justify-between">
-        <h4 class="text-sm font-semibold text-white">Installed Plugins</h4>
-        <button disabled class="px-4 py-2 bg-gray-700 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed opacity-50">
-          Install Plugin
-        </button>
+      <div v-if="!installedPlugins.length" class="bg-gray-800 rounded-xl border border-gray-700/50 p-6">
+        <div class="text-center py-6">
+          <div class="text-3xl mb-3 text-gray-600"><i class="fa-solid fa-puzzle-piece"></i></div>
+          <p class="text-sm text-gray-500">No plugins installed yet</p>
+          <p v-if="availablePlugins.length" class="text-xs text-gray-600 mt-1">Install a plugin from the available section above</p>
+        </div>
       </div>
-      <div class="text-center py-8">
-        <div class="text-4xl mb-3">🧩</div>
-        <p class="text-sm text-gray-500">No plugins installed</p>
-        <p class="text-xs text-gray-600 mt-1">Plugins will appear here once the system is available</p>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          v-for="p in installedPlugins"
+          :key="p.slug"
+          class="bg-gray-800 rounded-xl border border-gray-700/50 p-5 flex flex-col gap-4"
+        >
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-white">{{ p.name }}</span>
+                <span class="text-xs text-gray-500">v{{ p.version }}</span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">{{ p.description }}</p>
+              <p class="text-xs text-gray-500 mt-1">By {{ p.author }}</p>
+            </div>
+            <!-- Enabled toggle pill -->
+            <button
+              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none"
+              :class="p.enabled ? 'bg-green-500' : 'bg-gray-600'"
+              @click="doToggle(p.slug)"
+            >
+              <span
+                class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200"
+                :class="p.enabled ? 'translate-x-5' : 'translate-x-0'"
+              ></span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              v-if="pluginAdminPages[p.slug]"
+              class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-medium rounded-lg transition-colors"
+              @click="configure(p.slug)"
+            >
+              <i class="fa-solid fa-gear mr-1"></i> Configure
+            </button>
+            <button
+              class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium rounded-lg transition-colors"
+              @click="doUninstall(p.slug)"
+            >
+              <i class="fa-solid fa-trash mr-1"></i> Uninstall
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

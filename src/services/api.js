@@ -162,6 +162,19 @@ export const createAdminGroup = (d) => api.post('/admin/groups', d)
 export const updateAdminGroup = (id, d) => api.put('/admin/groups/' + id, d)
 export const deleteAdminGroup = (id) => api.delete('/admin/groups/' + id)
 
+// Admin - Plugins
+export const getAdminPlugins = () => api.get('/admin/plugins')
+export const installPlugin = (slug) => api.post('/admin/plugins/install', { slug })
+export const togglePlugin = (slug) => api.post(`/admin/plugins/${slug}/toggle`)
+export const uninstallPlugin = (slug) => api.delete(`/admin/plugins/${slug}`)
+
+// Announcements
+export const getAnnouncements = () => api.get('/announcements')
+export const getAdminAnnouncements = () => api.get('/admin/announcements')
+export const createAnnouncement = (data) => api.post('/admin/announcements', data)
+export const updateAnnouncement = (id, data) => api.put(`/admin/announcements/${id}`, data)
+export const deleteAnnouncement = (id) => api.delete(`/admin/announcements/${id}`)
+
 // Admin - Config
 export const getAdminConfig = () => api.get('/admin/config')
 export const updateAdminConfig = (data) => api.put('/admin/config', data)
