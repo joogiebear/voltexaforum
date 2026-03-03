@@ -520,7 +520,7 @@ onMounted(loadThread)
                 <!-- Background image with fade -->
                 <div
                   v-if="post.author?.postbit_bg"
-                  class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+                  class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
                   :style="{ backgroundImage: `url(${post.author.postbit_bg})` }"
                 />
                 <!-- Fade gradient -->
