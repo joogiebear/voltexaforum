@@ -1,14 +1,28 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useForumStore } from '../stores/forum'
+import { useNotificationsStore } from '../stores/notifications'
+import { getAdminDashboard } from '../services/api'
 import UserAvatar from '../components/UserAvatar.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const forumStore = useForumStore()
 const sidebarOpen = ref(false)
+const onlineCount = ref(0)
+const pendingReports = ref(0)
+const notificationStore = useNotificationsStore()
+
+onMounted(async () => {
+  try {
+    const res = await getAdminDashboard()
+    const d = res.data.data || res.data
+    onlineCount.value = d.online_count ?? 0
+    pendingReports.value = d.pending_reports ?? 0
+  } catch {}
+})
 
 const pageTitle = computed(() => route.meta?.title || 'Admin')
 
@@ -144,19 +158,17 @@ function isActive(path) {
           <div class="hidden md:flex items-center gap-2">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium">
               <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-              24 online
+              {{ onlineCount }} online
             </span>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-medium">
-              3 pending reports
+            <span v-if="pendingReports > 0" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-medium">
+              {{ pendingReports }} pending reports
             </span>
           </div>
           <!-- Notification bell -->
-          <button class="relative p-2 rounded-lg hover:bg-gray-800 text-gray-400 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
+          <router-link to="/notifications" class="relative p-2 rounded-lg hover:bg-gray-800 text-gray-400 transition-colors">
+            <i class="fa-solid fa-bell w-5 h-5 text-lg"></i>
+            <span v-if="notificationStore.unreadCount > 0" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          </router-link>
         </div>
       </header>
 
