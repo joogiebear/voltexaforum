@@ -1,5 +1,5 @@
 <script setup>
-import { provide, computed, watch } from 'vue'
+import { provide, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from './composables/useTheme'
 import { useForumStore } from './stores/forum'
@@ -13,6 +13,9 @@ provide('isDark', isDark)
 provide('toggleTheme', toggle)
 
 const isAdmin = computed(() => route.path.startsWith('/admin'))
+
+// Load forum config once on app boot — makes it available on any page/refresh
+onMounted(() => forumStore.fetchConfig())
 
 // Apply accent color from config dynamically
 watch(() => forumStore.config?.accent_color, (color) => {
