@@ -189,7 +189,7 @@ function tagClass(tag) {
             <span class="text-xs font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Regular Threads</span>
           </div>
           <router-link
-          :to="`/thread/${thread.id}`"
+          :to="`/thread/${thread.slug || thread.id}`"
           class="block sm:grid grid-cols-[1fr_100px_100px_120px] gap-4 items-center px-5 py-4 transition-colors duration-150"
           :class="[
             isDark ? 'hover:bg-gray-800/60' : 'hover:bg-gray-50',
