@@ -3,7 +3,7 @@ import { inject, ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useForumStore } from '../stores/forum'
-import { getThread, getThreadPosts, createPost, updatePost, updateThread, pinThread, lockThread, solveThread, adminDeletePost, deleteThread, moveThread, likeThread as likeThreadApi, reportPost, toggleThreadSubscription, getThreadSubscription } from '../services/api'
+import { getThread, getThreadPosts, createPost, updatePost, updateThread, pinThread, lockThread, solveThread, adminDeletePost, deleteThread, moveThread, likeThread as likeThreadApi, likePost as likePostApi, reportPost, toggleThreadSubscription, getThreadSubscription } from '../services/api'
 import { useToastStore } from '../stores/toast'
 import UserAvatar from '../components/UserAvatar.vue'
 import MarkdownEditor from '../components/MarkdownEditor.vue'
@@ -265,6 +265,21 @@ async function toggleSubscribe() {
     subscribed.value = prev
   } finally {
     subLoading.value = false
+  }
+}
+
+async function togglePostLike(post) {
+  if (!authStore.isLoggedIn) return
+  const prev = { liked: post.is_liked_by_me, count: post.like_count }
+  post.is_liked_by_me = !prev.liked
+  post.like_count = prev.count + (post.is_liked_by_me ? 1 : -1)
+  try {
+    const { data } = await likePostApi(post.id)
+    post.is_liked_by_me = data.data.liked
+    post.like_count = data.data.like_count
+  } catch {
+    post.is_liked_by_me = prev.liked
+    post.like_count = prev.count
   }
 }
 
@@ -649,6 +664,21 @@ onMounted(loadThread)
               <template v-else>
                 <MarkdownRenderer :content="post.body" :rendered-content="post.rendered_content" />
               </template>
+
+              <!-- Post like button -->
+              <div v-if="authStore.isLoggedIn" class="mt-4 pt-3 border-t flex items-center gap-3" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
+                <button
+                  @click="togglePostLike(post)"
+                  class="flex items-center gap-1.5 text-sm transition-colors"
+                  :class="post.is_liked_by_me ? 'text-pink-400' : isDark ? 'text-gray-500 hover:text-pink-400' : 'text-gray-400 hover:text-pink-400'"
+                >
+                  <i :class="post.is_liked_by_me ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+                  <span>{{ post.like_count || '' }}</span>
+                </button>
+                <span v-if="post.like_count > 0" class="text-xs" :class="isDark ? 'text-gray-600' : 'text-gray-400'">
+                  {{ post.like_count }} {{ post.like_count === 1 ? 'person' : 'people' }} liked this
+                </span>
+              </div>
             </div>
           </div>
         </div>

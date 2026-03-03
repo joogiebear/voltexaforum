@@ -52,6 +52,7 @@ export const deletePost = (postId) => api.delete('/posts/' + postId)
 export const updatePost = (id, data) => api.put('/posts/' + id, data)
 export const updateThread = (id, data) => api.put('/threads/' + id, data)
 export const likeThread = (id) => api.post('/threads/' + id + '/like')
+export const likePost = (id) => api.post('/posts/' + id + '/like')
 
 // Search
 export const search = (query, type = 'all', page = 1) => api.get('/search', { params: { q: query, type, page } })
