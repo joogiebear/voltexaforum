@@ -48,20 +48,40 @@ const routes = [
     children: [
       { path: '', redirect: '/admin/dashboard' },
       { path: 'dashboard', name: 'AdminDashboard', component: () => import('../views/admin/AdminDashboard.vue'), meta: { title: 'Dashboard' } },
+      // Community
       { path: 'users', name: 'AdminUsers', component: () => import('../views/admin/AdminUsers.vue'), meta: { title: 'Users' } },
       { path: 'users/:id', name: 'AdminUserEdit', component: () => import('../views/admin/AdminUserEdit.vue'), meta: { title: 'Edit User' } },
-      { path: 'forums', name: 'AdminForums', component: () => import('../views/admin/AdminForums.vue'), meta: { title: 'Forums' } },
-      { path: 'forums/create', name: 'AdminForumCreate', component: () => import('../views/admin/AdminForums.vue'), meta: { title: 'Create Forum' } },
-      { path: 'forums/:id/permissions', name: 'AdminForumPermissions', component: () => import('../views/admin/AdminForumPermissions.vue'), meta: { title: 'Forum Permissions' } },
+      { path: 'groups', name: 'AdminGroups', component: () => import('../views/admin/AdminGroups.vue'), meta: { title: 'Groups & Roles' } },
       { path: 'moderation', name: 'AdminModeration', component: () => import('../views/admin/AdminModeration.vue'), meta: { title: 'Moderation' } },
+      // Content
+      { path: 'content/threads', name: 'AdminContentThreads', component: () => import('../views/admin/content/AdminContentThreads.vue'), meta: { title: 'Threads' } },
+      { path: 'content/posts', name: 'AdminContentPosts', component: () => import('../views/admin/content/AdminContentPosts.vue'), meta: { title: 'Posts' } },
+      // Commerce
       { path: 'store', redirect: '/admin/store/items' },
       { path: 'store/items', name: 'AdminStoreItems', component: () => import('../views/admin/AdminStoreItems.vue'), meta: { title: 'Store Items' } },
       { path: 'store/purchases', name: 'AdminStorePurchases', component: () => import('../views/admin/AdminStorePurchases.vue'), meta: { title: 'Purchases' } },
+      // Gamification
       { path: 'achievements', name: 'AdminAchievements', component: () => import('../views/admin/AdminAchievements.vue'), meta: { title: 'Achievements' } },
       { path: 'awards', name: 'AdminAwards', component: () => import('../views/admin/AdminAwards.vue'), meta: { title: 'Awards' } },
-      { path: 'groups', name: 'AdminGroups', component: () => import('../views/admin/AdminGroups.vue'), meta: { title: 'Groups' } },
-      { path: 'config', name: 'AdminConfig', component: () => import('../views/admin/AdminConfig.vue'), meta: { title: 'Configuration' } },
+      // Appearance
+      { path: 'appearance/themes', name: 'AdminAppearanceThemes', component: () => import('../views/admin/appearance/AdminAppearanceThemes.vue'), meta: { title: 'Themes' } },
+      { path: 'appearance/custom-code', name: 'AdminAppearanceCustomCode', component: () => import('../views/admin/appearance/AdminAppearanceCustomCode.vue'), meta: { title: 'Custom CSS/JS' } },
+      // Plugins
       { path: 'plugins', name: 'AdminPlugins', component: () => import('../views/admin/AdminPlugins.vue'), meta: { title: 'Plugins' } },
+      { path: 'plugins/upload', name: 'AdminPluginsUpload', component: () => import('../views/admin/plugins/AdminPluginsUpload.vue'), meta: { title: 'Upload Plugin' } },
+      // Settings
+      { path: 'settings', redirect: '/admin/settings/general' },
+      { path: 'settings/general', name: 'AdminSettingsGeneral', component: () => import('../views/admin/settings/AdminSettingsGeneral.vue'), meta: { title: 'General Settings' } },
+      { path: 'settings/forums', redirect: '/admin/forums' },
+      { path: 'settings/email', name: 'AdminSettingsEmail', component: () => import('../views/admin/settings/AdminSettingsEmail.vue'), meta: { title: 'Email & SMTP' } },
+      { path: 'settings/credits', name: 'AdminSettingsCredits', component: () => import('../views/admin/settings/AdminSettingsCredits.vue'), meta: { title: 'Credits' } },
+      { path: 'settings/store', name: 'AdminSettingsStore', component: () => import('../views/admin/settings/AdminSettingsStore.vue'), meta: { title: 'Store Settings' } },
+      // Old config route redirect
+      { path: 'config', redirect: '/admin/settings/general' },
+      // Forums (kept for redirect target and direct access)
+      { path: 'forums', name: 'AdminForums', component: () => import('../views/admin/AdminForums.vue'), meta: { title: 'Forums' } },
+      { path: 'forums/create', name: 'AdminForumCreate', component: () => import('../views/admin/AdminForums.vue'), meta: { title: 'Create Forum' } },
+      { path: 'forums/:id/permissions', name: 'AdminForumPermissions', component: () => import('../views/admin/AdminForumPermissions.vue'), meta: { title: 'Forum Permissions' } },
     ],
   },
 ]

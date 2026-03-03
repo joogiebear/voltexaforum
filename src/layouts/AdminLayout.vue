@@ -37,9 +37,15 @@ const navSections = [
     label: 'Community',
     items: [
       { to: '/admin/users', label: 'Users', icon: 'fa-solid fa-users' },
-      { to: '/admin/forums', label: 'Forums', icon: 'fa-solid fa-comments' },
+      { to: '/admin/groups', label: 'Groups & Roles', icon: 'fa-solid fa-users-gear' },
       { to: '/admin/moderation', label: 'Moderation', icon: 'fa-solid fa-shield-halved' },
-      { to: '/admin/groups', label: 'Groups', icon: 'fa-solid fa-users-gear' },
+    ],
+  },
+  {
+    label: 'Content',
+    items: [
+      { to: '/admin/content/threads', label: 'Threads', icon: 'fa-solid fa-newspaper' },
+      { to: '/admin/content/posts', label: 'Posts', icon: 'fa-solid fa-comment-dots' },
     ],
   },
   {
@@ -57,16 +63,35 @@ const navSections = [
     ],
   },
   {
-    label: 'System',
+    label: 'Appearance',
     items: [
-      { to: '/admin/config', label: 'Config', icon: 'fa-solid fa-gear' },
-      { to: '/admin/plugins', label: 'Plugins', icon: 'fa-solid fa-puzzle-piece' },
+      { to: '/admin/appearance/themes', label: 'Themes', icon: 'fa-solid fa-palette' },
+      { to: '/admin/appearance/custom-code', label: 'Custom CSS/JS', icon: 'fa-solid fa-code' },
+    ],
+  },
+  {
+    label: 'Plugins',
+    items: [
+      { to: '/admin/plugins', label: 'Installed', icon: 'fa-solid fa-puzzle-piece' },
+      { to: '/admin/plugins/upload', label: 'Upload', icon: 'fa-solid fa-upload' },
+    ],
+  },
+  {
+    label: 'Settings',
+    items: [
+      { to: '/admin/settings/general', label: 'General', icon: 'fa-solid fa-sliders' },
+      { to: '/admin/settings/forums', label: 'Forums', icon: 'fa-solid fa-comments' },
+      { to: '/admin/settings/email', label: 'Email & SMTP', icon: 'fa-solid fa-envelope' },
+      { to: '/admin/settings/credits', label: 'Credits', icon: 'fa-solid fa-coins' },
+      { to: '/admin/settings/store', label: 'Store', icon: 'fa-solid fa-store' },
     ],
   },
 ]
 
 function isActive(path) {
   if (path === '/admin/dashboard') return route.path === '/admin/dashboard' || route.path === '/admin'
+  // Exact match for paths that are prefixes of sibling nav items
+  if (path === '/admin/plugins') return route.path === '/admin/plugins'
   return route.path.startsWith(path)
 }
 </script>
