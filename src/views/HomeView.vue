@@ -29,7 +29,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
     <!-- Loading -->
     <div v-if="loading" class="space-y-4">
       <div v-for="i in 3" :key="i" class="rounded-xl p-5 animate-pulse" :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'">
@@ -118,24 +118,30 @@ onMounted(async () => {
                   <div class="hidden md:block self-stretch w-px mx-1 shrink-0" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'"></div>
 
                   <!-- Last post -->
-                  <div class="hidden md:flex items-center gap-2.5 shrink-0 w-40">
+                  <div class="hidden md:flex items-center gap-2.5 shrink-0 w-56">
                     <template v-if="forum.last_post_user">
                       <UserAvatar
                         :name="forum.last_post_user.username"
-                        :color="forum.last_post_user.avatar_color || 'bg-purple-500'"
+                        :color="forum.last_post_user.avatar_color || '#7c3aed'"
                         :avatar-url="forum.last_post_user.avatar_url"
                         :online="false"
                         size="sm"
                       />
                       <div class="min-w-0">
-                        <div class="text-xs font-medium truncate">
-                          <span :style="forum.last_post_user.group_color ? { color: forum.last_post_user.group_color } : {}" :class="!forum.last_post_user.group_color ? (isDark ? 'text-gray-300' : 'text-gray-600') : ''">{{ forum.last_post_user.username }}</span>
-                        </div>
-                        <div class="text-[11px]" :class="isDark ? 'text-gray-600' : 'text-gray-400'">
-                          {{ forum.last_post_at ? formatRelative(forum.last_post_at) : '' }}
+                        <router-link
+                          v-if="forum.last_thread"
+                          :to="`/thread/${forum.last_thread.slug}`"
+                          class="text-xs font-medium truncate block hover:text-purple-accent transition-colors"
+                          :class="isDark ? 'text-gray-300' : 'text-gray-700'"
+                        >{{ forum.last_thread.title }}</router-link>
+                        <div class="text-[11px] flex items-center gap-1 mt-0.5" :class="isDark ? 'text-gray-600' : 'text-gray-400'">
+                          <span :style="forum.last_post_user.group_color ? { color: forum.last_post_user.group_color } : {}">{{ forum.last_post_user.username }}</span>
+                          <span>·</span>
+                          <span>{{ forum.last_post_at ? formatRelative(forum.last_post_at) : '' }}</span>
                         </div>
                       </div>
                     </template>
+                    <span v-else class="text-xs" :class="isDark ? 'text-gray-600' : 'text-gray-400'">No posts yet</span>
                   </div>
                 </router-link>
               </div>
