@@ -454,8 +454,8 @@ async function handleRemoveSession(id) {
               </div>
             </div>
 
-            <!-- Postbit Background -->
-            <div class="mb-6">
+            <!-- Postbit Background (admin only — others purchase via store) -->
+            <div v-if="authStore.isAdmin" class="mb-6">
               <label class="block text-sm font-medium mb-3" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Postbit Background</label>
               <div class="flex items-start gap-5">
                 <div
