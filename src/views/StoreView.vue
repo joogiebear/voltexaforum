@@ -1,7 +1,7 @@
 <script setup>
 import { inject, ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { getStoreItems, purchaseWithCredits } from '../services/api'
+import { getStoreItems, purchaseWithCredits, createCheckout } from '../services/api'
 
 const isDark = inject('isDark')
 const authStore = useAuthStore()
@@ -64,6 +64,22 @@ async function handlePurchase(item) {
     await authStore.fetchUser()
   } catch (e) {
     purchaseError.value = e.response?.data?.message || 'Purchase failed. Please try again.'
+  } finally {
+    purchasingId.value = null
+  }
+}
+
+async function handleMoneyPurchase(item) {
+  purchaseMessage.value = null
+  purchaseError.value = null
+  purchasingId.value = item.id
+  try {
+    const res = await createCheckout({ store_item_id: item.id })
+    const url = res.data?.url || res.data?.checkout_url
+    if (url) window.location.href = url
+    else purchaseError.value = 'Could not start checkout. Please try again.'
+  } catch (e) {
+    purchaseError.value = e.response?.data?.message || 'Checkout failed. Please try again.'
   } finally {
     purchasingId.value = null
   }
@@ -145,8 +161,8 @@ async function handlePurchase(item) {
               {{ featuredItem.description }}
             </p>
           </div>
-          <div v-if="featuredItem.money_price" class="text-center shrink-0">
-            <div class="text-2xl font-bold text-green-400 mb-2">${{ featuredItem.money_price?.toFixed(2) }}</div>
+          <div v-if="featuredItem.price_money" class="text-center shrink-0">
+            <div class="text-2xl font-bold text-green-400 mb-2">${{ featuredItem.price_money?.toFixed(2) }}</div>
             <button
               class="px-8 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all duration-200"
             >
@@ -211,37 +227,39 @@ async function handlePurchase(item) {
             <!-- Price badges -->
             <div class="flex items-center justify-center gap-2 mb-4 flex-wrap">
               <span
-                v-if="item.money_price"
+                v-if="item.price_money"
                 class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-500/15 text-green-400"
               >
-                ${{ item.money_price.toFixed(2) }}
+                ${{ item.price_money.toFixed(2) }}
               </span>
               <span
-                v-if="item.credit_price"
+                v-if="item.price_credits"
                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold"
                 :class="isDark ? 'bg-purple-accent/15 text-purple-accent' : 'bg-purple-50 text-purple-accent'"
               >
-                &#9889; {{ item.credit_price.toLocaleString() }}
+                <i class="fa-solid fa-coins mr-1 text-xs"></i>{{ item.price_credits.toLocaleString() }}
               </span>
             </div>
 
             <!-- Buttons -->
             <div v-if="!item.owned" class="flex gap-2">
               <button
-                v-if="item.money_price"
-                class="flex-1 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all duration-200 text-sm"
+                v-if="item.price_money"
+                @click="handleMoneyPurchase(item)"
+                :disabled="purchasingId === item.id || !authStore.isLoggedIn"
+                class="flex-1 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Buy Now
+                {{ purchasingId === item.id ? 'Redirecting...' : `$${Number(item.price_money).toFixed(2)}` }}
               </button>
               <button
-                v-if="item.credit_price && authStore.isLoggedIn"
+                v-if="item.price_credits && authStore.isLoggedIn"
                 @click="handlePurchase(item)"
-                :disabled="!canAfford(item.credit_price) || purchasingId === item.id"
+                :disabled="!canAfford(item.price_credits) || purchasingId === item.id"
                 class="flex-1 py-2.5 rounded-lg font-semibold text-white transition-all duration-200 text-sm"
-                :class="canAfford(item.credit_price)
+                :class="canAfford(item.price_credits)
                   ? 'bg-gradient-to-r from-purple-accent to-purple-700 hover:from-purple-600 hover:to-purple-800'
                   : 'bg-gray-600 cursor-not-allowed opacity-50'"
-                :title="!canAfford(item.credit_price) ? 'Insufficient credits' : ''"
+                :title="!canAfford(item.price_credits) ? 'Insufficient credits' : ''"
               >
                 {{ purchasingId === item.id ? 'Purchasing...' : 'Purchase' }}
               </button>
