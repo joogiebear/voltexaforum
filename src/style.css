@@ -4,6 +4,10 @@
   --color-purple-accent: #7c3aed;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 :root {
   --bg-page: #030712;
   --bg-section: #111827;
