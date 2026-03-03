@@ -34,7 +34,7 @@ async function fetchAchievements() {
 
 onMounted(fetchAchievements)
 
-const unlockedIds = computed(() => new Set(userAchievements.value.map(a => a.achievement_id)))
+const unlockedIds = computed(() => new Set(userAchievements.value.filter(a => a.unlocked_at).map(a => a.achievement_id)))
 
 const categories = computed(() => {
   const cats = new Set(achievements.value.map(a => a.category))
@@ -50,7 +50,7 @@ const filteredAchievements = computed(() => {
   return achievements.value.filter(a => a.category === activeCategory.value)
 })
 
-const unlockedCount = computed(() => userAchievements.value.length)
+const unlockedCount = computed(() => userAchievements.value.filter(a => a.unlocked_at).length)
 const totalCreditsEarned = computed(() => {
   return userAchievements.value.reduce((sum, a) => sum + (a.credits_earned || 0), 0)
 })
