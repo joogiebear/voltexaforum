@@ -53,6 +53,7 @@ const navSections = [
     items: [
       { to: '/admin/store/items', label: 'Store Items', icon: 'fa-solid fa-store' },
       { to: '/admin/store/purchases', label: 'Purchases', icon: 'fa-solid fa-credit-card' },
+      { to: '/admin/settings/store', label: 'Store Settings', icon: 'fa-solid fa-sliders' },
     ],
   },
   {
@@ -82,7 +83,6 @@ const navSections = [
       { to: '/admin/settings/forums', label: 'Forums', icon: 'fa-solid fa-comments' },
       { to: '/admin/settings/email', label: 'Email & SMTP', icon: 'fa-solid fa-envelope' },
       { to: '/admin/settings/credits', label: 'Credits', icon: 'fa-solid fa-coins' },
-      { to: '/admin/settings/store', label: 'Store', icon: 'fa-solid fa-store' },
     ],
   },
 ]

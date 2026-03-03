@@ -18,14 +18,13 @@ const newItem = ref({
   category: 'Ranks',
   price_money: null,
   price_credits: null,
-  game: 'all',
-  type: 'rank',
-  command: '',
+  item_type: 'rank',
+  item_value: '',
   is_active: true,
 })
 
 function resetNewItem() {
-  newItem.value = { name: '', slug: '', description: '', icon: '', category: 'Ranks', price_money: null, price_credits: null, game: 'all', type: 'rank', command: '', is_active: true }
+  newItem.value = { name: '', slug: '', description: '', icon: '', category: 'Ranks', price_money: null, price_credits: null, item_type: 'rank', item_value: '', is_active: true }
 }
 
 async function fetchItems() {
@@ -131,7 +130,7 @@ onMounted(fetchItems)
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">Item Type</label>
-          <select v-model="newItem.type" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none">
+          <select v-model="newItem.item_type" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none">
             <option value="rank">Rank</option>
             <option value="currency">Currency</option>
             <option value="kit">Kit</option>
@@ -141,7 +140,7 @@ onMounted(fetchItems)
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">Command</label>
-          <input v-model="newItem.command" type="text" placeholder="eco give {player} 500" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          <input v-model="newItem.item_value" type="text" placeholder="eco give {player} 500" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
         </div>
       </div>
       <div>
