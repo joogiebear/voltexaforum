@@ -35,21 +35,34 @@ const userAwardsList = ref([])
 const showDeleteConfirm = ref(false)
 
 const availableAwards = computed(() => {
-  const grantedIds = userAwardsList.value.map(a => a.id)
+  const grantedIds = userAwardsList.value.map(a => a.award_id)
   return allAwards.value.filter(a => !grantedIds.includes(a.id))
 })
+
+function applyUser(d) {
+  // Backend returns { data: { user: {...}, recent_posts: [...] } }
+  const u = d?.user || d
+  const isBanned = u.roles?.some(r => r.name === 'banned') ?? false
+  const primaryRole = u.roles?.find(r => r.name !== 'banned')?.name || 'member'
+  user.value = { ...u, role: primaryRole, is_banned: isBanned }
+  form.value.role = primaryRole
+  form.value.userTitle = u.user_title || ''
+  form.value.status = isBanned ? 'banned' : 'active'
+  userAwardsList.value = (u.user_awards || u.userAwards || []).map(ua => ({
+    id: ua.id,
+    award_id: ua.award_id,
+    name: ua.award?.name || '',
+    icon: ua.award?.icon || '⭐',
+    icon_url: ua.award?.icon_url || null,
+  }))
+}
 
 async function fetchUser() {
   loading.value = true
   error.value = null
   try {
     const res = await getAdminUser(userId.value)
-    const d = res.data.data || res.data
-    user.value = d
-    form.value.role = d.role || d.usergroup || 'member'
-    form.value.userTitle = d.user_title || d.userTitle || ''
-    form.value.status = d.is_banned ? 'banned' : 'active'
-    userAwardsList.value = d.awards || []
+    applyUser(res.data.data)
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to load user'
     toast.show(error.value, 'error')
@@ -70,10 +83,8 @@ async function saveSettings() {
   try {
     await updateAdminUser(userId.value, { role: form.value.role, user_title: form.value.userTitle })
     toast.show('User settings saved')
-    // Refresh so role badge updates immediately
     const res = await getAdminUser(userId.value)
-    user.value = res.data.data || res.data
-    if (user.value.role) form.value.role = user.value.role
+    applyUser(res.data.data)
   } catch (e) {
     toast.show(e.response?.data?.message || 'Failed to save', 'error')
   } finally {
