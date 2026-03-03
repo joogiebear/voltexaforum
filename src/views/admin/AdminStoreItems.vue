@@ -132,15 +132,18 @@ onMounted(fetchItems)
           <label class="block text-xs font-medium text-gray-400 mb-1">Item Type</label>
           <select v-model="newItem.item_type" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none">
             <option value="rank">Rank</option>
-            <option value="currency">Currency</option>
+            <option value="currency">Currency (credits)</option>
             <option value="kit">Kit</option>
             <option value="cosmetic">Cosmetic</option>
             <option value="flair">Flair</option>
+            <option value="postbit_bg">Postbit Background</option>
           </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">Command</label>
-          <input v-model="newItem.item_value" type="text" placeholder="eco give {player} 500" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+          <input v-model="newItem.item_value" type="text"
+            :placeholder="newItem.item_type === 'postbit_bg' ? 'https://... (image/gif URL)' : newItem.item_type === 'currency' ? 'Amount e.g. 500' : newItem.item_type === 'flair' ? '🔥' : 'eco give {player} 500'"
+            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
         </div>
       </div>
       <div>
