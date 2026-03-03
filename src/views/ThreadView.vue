@@ -398,36 +398,29 @@ onMounted(loadThread)
         </span>
       </div>
 
-      <!-- Thread likes -->
-      <div class="flex items-center gap-3 mb-4 flex-wrap">
-        <button
-          @click="handleLike"
-          :disabled="!authStore.isLoggedIn"
-          class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-          :class="liked
-            ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
-            : isDark ? 'bg-gray-800 text-gray-400 hover:text-red-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-400 hover:text-red-400 hover:bg-gray-200'"
-        >
-          <i :class="liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
-          {{ likesCount }}
-        </button>
-        <div v-if="likers.length" class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-          <i class="fa-solid fa-heart text-red-400 text-xs mr-1"></i>
-          <span v-if="likers.length <= 3">
-            {{ likers.map(l => l.username).join(", ") }}
-          </span>
-          <span v-else>
-            {{ likers.slice(0, 2).map(l => l.username).join(", ") }} and {{ likers.length - 2 }} others
-          </span>
-          liked this
-        </div>
-      </div>
-
-      <!-- Subscribe + Mod toolbar row -->
+      <!-- Thread like + Subscribe + Mod toolbar row -->
       <div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
-        <!-- Subscribe -->
-        <button
-          v-if="authStore.isLoggedIn"
+        <!-- Left: Thread like + likers + Subscribe -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <!-- Thread like -->
+          <button
+            @click="handleLike"
+            :disabled="!authStore.isLoggedIn"
+            class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors"
+            :class="liked
+              ? 'border-red-500/40 text-red-400 bg-red-500/10 hover:bg-red-500/20'
+              : isDark ? 'border-gray-700 text-gray-500 hover:text-red-400 hover:border-red-500/40' : 'border-gray-200 text-gray-400 hover:text-red-400 hover:border-red-300'"
+          >
+            <i :class="liked ? 'fa-solid fa-heart text-[11px]' : 'fa-regular fa-heart text-[11px]'"></i>
+            <span>{{ likesCount || 'Like' }}</span>
+          </button>
+          <div v-if="likers.length" class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+            <span v-if="likers.length <= 3">{{ likers.map(l => l.username).join(", ") }}</span>
+            <span v-else>{{ likers.slice(0, 2).map(l => l.username).join(", ") }} +{{ likers.length - 2 }}</span>
+          </div>
+          <!-- Subscribe -->
+          <button
+            v-if="authStore.isLoggedIn"
           @click="toggleSubscribe"
           :disabled="subLoading"
           class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors"
@@ -439,6 +432,8 @@ onMounted(loadThread)
           {{ subscribed ? 'Subscribed' : 'Subscribe' }}
         </button>
         <div v-else />
+
+                </div><!-- end left group -->
 
         <!-- Mod toolbar -->
         <div v-if="authStore.isModerator" class="flex items-center gap-1 px-2 py-1 rounded-lg border" :class="isDark ? 'border-gray-800 bg-gray-900/50' : 'border-gray-200 bg-gray-50'">
@@ -589,7 +584,7 @@ onMounted(loadThread)
             </div>
 
             <!-- Post content -->
-            <div class="flex-1 p-5">
+            <div class="flex-1 p-5 flex flex-col">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
                   <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
@@ -646,7 +641,7 @@ onMounted(loadThread)
               </template>
 
               <!-- Post footer — always anchored at bottom -->
-              <div class="mt-4 pt-3 border-t flex items-center justify-between gap-3" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
+              <div class="mt-auto pt-3 border-t flex items-center justify-between gap-3" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
                 <!-- Left: Like -->
                 <button
                   v-if="authStore.isLoggedIn"
