@@ -117,4 +117,14 @@ onBeforeUnmount(() => {
 .markdown-content :deep(.spoiler-content.revealed) {
   color: inherit;
 }
+
+/* @mention links */
+.markdown-content :deep(.mention) {
+  color: #7c3aed;
+  font-weight: 600;
+  text-decoration: none;
+}
+.markdown-content :deep(.mention:hover) {
+  text-decoration: underline;
+}
 </style>

@@ -24,6 +24,8 @@ const routes = [
   { path: '/forum/:slug', name: 'Forum', component: ThreadListView },
   { path: '/thread/:id', name: 'Thread', component: ThreadView },
   { path: '/store', name: 'Store', component: StoreView },
+  { path: '/store/success', name: 'StorePurchaseSuccess', component: () => import('../views/StorePurchaseSuccess.vue') },
+  { path: '/store/cancel', name: 'StorePurchaseCancel', component: () => import('../views/StorePurchaseCancel.vue') },
   { path: '/profile/:username', name: 'Profile', component: ProfileView },
   { path: '/achievements', name: 'Achievements', component: AchievementsView },
   { path: '/credits', name: 'Credits', component: CreditsView, meta: { requiresAuth: true } },

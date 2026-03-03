@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, computed } from 'vue'
 import { marked } from 'marked'
+import { getMembers } from '../services/api'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -16,6 +17,61 @@ const previewing = ref(false)
 // BBCode dropdowns
 const showColorPicker = ref(false)
 const showSizePicker = ref(false)
+
+// @mention autocomplete
+const showMentions = ref(false)
+const mentionUsers = ref([])
+const mentionPos = ref(null)
+let mentionSearchTimer = null
+
+function handleInput(e) {
+  emit('update:modelValue', e.target.value)
+
+  const val = e.target.value
+  const cursor = e.target.selectionStart
+  const textBeforeCursor = val.slice(0, cursor)
+  const mentionMatch = textBeforeCursor.match(/@(\w*)$/)
+
+  if (mentionMatch) {
+    mentionPos.value = cursor
+    showMentions.value = true
+    clearTimeout(mentionSearchTimer)
+    const query = mentionMatch[1]
+    if (query.length >= 1) {
+      mentionSearchTimer = setTimeout(async () => {
+        try {
+          const res = await getMembers({ q: query, per_page: 6 })
+          mentionUsers.value = (res.data.data.data || res.data.data || []).slice(0, 6)
+        } catch { mentionUsers.value = [] }
+      }, 200)
+    } else {
+      mentionUsers.value = []
+    }
+  } else {
+    showMentions.value = false
+    mentionUsers.value = []
+  }
+}
+
+function insertMention(username) {
+  const val = props.modelValue
+  const cursor = mentionPos.value
+  const textBeforeCursor = val.slice(0, cursor)
+  const beforeAt = textBeforeCursor.replace(/@\w*$/, '')
+  const afterCursor = val.slice(cursor)
+  const newVal = beforeAt + '@' + username + ' ' + afterCursor
+  emit('update:modelValue', newVal)
+  showMentions.value = false
+  mentionUsers.value = []
+  requestAnimationFrame(() => {
+    const el = textarea.value
+    if (el) {
+      const pos = beforeAt.length + username.length + 2
+      el.focus()
+      el.setSelectionRange(pos, pos)
+    }
+  })
+}
 
 const renderedPreview = computed(() => {
   if (!props.modelValue) return ''
@@ -270,16 +326,32 @@ const bbSizes = [
     </div>
 
     <!-- Editor / Preview -->
-    <div v-if="!previewing">
+    <div v-if="!previewing" class="relative">
       <textarea
         ref="textarea"
         :value="modelValue"
-        @input="emit('update:modelValue', $event.target.value)"
+        @input="handleInput"
         :rows="rows"
         :placeholder="placeholder"
         class="w-full px-4 py-3 rounded-b-lg border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-purple-accent resize-y"
         :class="isDark ? 'bg-gray-800 text-white border-gray-700 placeholder-gray-500' : 'bg-white text-gray-900 border-gray-200 placeholder-gray-400'"
       />
+      <!-- @mention dropdown -->
+      <div
+        v-if="showMentions && mentionUsers.length"
+        class="absolute left-4 bottom-full mb-1 z-50 rounded-lg border shadow-lg overflow-hidden w-48"
+        :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+      >
+        <button
+          v-for="u in mentionUsers"
+          :key="u.id"
+          @mousedown.prevent="insertMention(u.username)"
+          class="flex items-center gap-2 w-full px-3 py-2 text-sm text-left transition-colors"
+          :class="isDark ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-100 text-gray-700'"
+        >
+          <span class="font-medium">@{{ u.username }}</span>
+        </button>
+      </div>
     </div>
     <div
       v-else
