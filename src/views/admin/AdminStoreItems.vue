@@ -168,7 +168,7 @@ onMounted(fetchItems)
               <th class="px-5 py-3">Item</th>
               <th class="px-5 py-3">Category</th>
               <th class="px-5 py-3">$ Price</th>
-              <th class="px-5 py-3">⚡ Credits</th>
+              <th class="px-5 py-3"><i class="fa-solid fa-coins text-sm mr-1"></i>Credits</th>
               <th class="px-5 py-3">Active</th>
               <th class="px-5 py-3">Actions</th>
             </tr>
@@ -194,7 +194,7 @@ onMounted(fetchItems)
                 </td>
                 <td class="px-5 py-3 text-gray-400">{{ item.category }}</td>
                 <td class="px-5 py-3 text-gray-300">{{ item.price_money != null ? `$${Number(item.price_money).toFixed(2)}` : '—' }}</td>
-                <td class="px-5 py-3 text-gray-300">{{ item.price_credits != null ? `⚡ ${item.price_credits}` : '—' }}</td>
+                <td class="px-5 py-3 text-gray-300">{{ item.price_credits != null ? item.price_credits : '—' }}</td>
                 <td class="px-5 py-3">
                   <button
                     @click="toggleActive(item)"

@@ -124,7 +124,7 @@ function getProgress(ach) {
           class="rounded-xl p-5 text-center transition-colors duration-300"
           :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'"
         >
-          <div class="text-3xl font-bold text-purple-accent">&#9889; {{ totalCreditsEarned.toLocaleString() }}</div>
+          <div class="text-3xl font-bold text-purple-accent"><i class="fa-solid fa-coins mr-1"></i>{{ totalCreditsEarned.toLocaleString() }}</div>
           <div class="text-sm mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Credits Earned</div>
         </div>
       </div>

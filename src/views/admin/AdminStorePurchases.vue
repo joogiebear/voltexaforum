@@ -92,7 +92,7 @@ onMounted(fetchPurchases)
         </template>
         <template v-else>
           <div class="text-sm text-gray-400">Credits Spent</div>
-          <div class="text-2xl font-bold text-violet-400 mt-1">⚡ {{ Number(totalRevenue.credits).toLocaleString() }}</div>
+          <div class="text-2xl font-bold text-violet-400 mt-1"><i class="fa-solid fa-coins text-sm mr-1"></i>{{ Number(totalRevenue.credits).toLocaleString() }}</div>
           <div class="text-xs text-gray-500 mt-1">This month</div>
         </template>
       </div>
@@ -116,7 +116,7 @@ onMounted(fetchPurchases)
       >
         <option value="all">All Methods</option>
         <option value="money">Money ($)</option>
-        <option value="credits">Credits (⚡)</option>
+        <option value="credits">Credits</option>
       </select>
     </div>
 
@@ -157,10 +157,12 @@ onMounted(fetchPurchases)
                 </td>
                 <td class="px-5 py-3 text-gray-300">{{ p.item?.name || p.item }}</td>
                 <td class="px-5 py-3">
-                  <span class="text-base">{{ p.method === 'money' ? '💳' : '⚡' }}</span>
+                  <span class="text-base">{{ p.method === 'money' ? '💳' : '' }}</span>
+                  <i v-if="p.method !== 'money'" class="fa-solid fa-coins text-violet-400"></i>
                 </td>
                 <td class="px-5 py-3 text-gray-300 font-medium">
-                  {{ p.method === 'money' ? `$${Number(p.amount).toFixed(2)}` : `⚡ ${p.amount}` }}
+                  <template v-if="p.method === 'money'">${{ Number(p.amount).toFixed(2) }}</template>
+                  <template v-else><i class="fa-solid fa-coins text-xs mr-0.5"></i>{{ p.amount }}</template>
                 </td>
                 <td class="px-5 py-3">
                   <span class="px-2 py-0.5 rounded-full text-xs font-medium capitalize" :class="statusBadge(p.status)">

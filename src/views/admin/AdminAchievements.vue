@@ -182,7 +182,7 @@ onMounted(fetchAchievements)
                 </td>
                 <td class="px-5 py-3 text-gray-400 capitalize">{{ a.type }}</td>
                 <td class="px-5 py-3 text-gray-400">{{ a.target || '—' }}</td>
-                <td class="px-5 py-3 text-violet-400 font-medium">⚡ {{ a.credits_reward || a.creditsReward || 0 }}</td>
+                <td class="px-5 py-3 text-violet-400 font-medium"><i class="fa-solid fa-coins mr-1"></i>{{ a.credits_reward || a.creditsReward || 0 }}</td>
                 <td class="px-5 py-3">
                   <div class="flex items-center gap-1">
                     <button @click="doDelete(a.id)" class="p-1.5 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors" title="Delete">

@@ -106,7 +106,7 @@ async function handlePurchase(item) {
             class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold"
             :class="isDark ? 'bg-gray-800 text-purple-accent' : 'bg-purple-50 text-purple-accent'"
           >
-            <span>&#9889;</span>
+            <i class="fa-solid fa-coins text-sm"></i>
             <span>{{ authStore.credits.toLocaleString() }} credits</span>
           </div>
           <router-link

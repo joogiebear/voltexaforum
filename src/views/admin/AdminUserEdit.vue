@@ -229,7 +229,7 @@ onMounted(() => {
             </div>
             <div class="flex justify-between">
               <span class="text-gray-500">Credits</span>
-              <span class="text-violet-400 font-medium">⚡ {{ (user.credits || 0).toLocaleString() }}</span>
+              <span class="text-violet-400 font-medium"><i class="fa-solid fa-coins mr-1"></i>{{ (user.credits || 0).toLocaleString() }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-500">Status</span>
@@ -266,7 +266,7 @@ onMounted(() => {
           <div>
             <label class="block text-sm font-medium text-gray-400 mb-1.5">Adjust Credits</label>
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-lg font-bold text-violet-400">⚡ {{ (user.credits || 0).toLocaleString() }}</span>
+              <span class="text-lg font-bold text-violet-400"><i class="fa-solid fa-coins mr-1"></i>{{ (user.credits || 0).toLocaleString() }}</span>
               <input v-model.number="creditsAmount" type="number" min="0" placeholder="Amount" class="w-24 px-3 py-1.5 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
               <input v-model="creditsReason" type="text" placeholder="Reason" class="flex-1 min-w-[120px] px-3 py-1.5 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
               <button @click="addCredits" class="px-3 py-1.5 bg-green-500/10 text-green-400 text-xs font-medium rounded-lg hover:bg-green-500/20 transition-colors border border-green-500/20">+ Add</button>
