@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { getAdminStoreItems, createAdminStoreItem, updateAdminStoreItem, deleteAdminStoreItem } from '../../services/api'
 import { useToastStore } from '../../stores/toast'
 
@@ -9,13 +9,14 @@ const error = ref(null)
 
 const items = ref([])
 const showCreateForm = ref(false)
+const existingCategories = computed(() => [...new Set(items.value.map(i => i.category).filter(Boolean))])
 
 const newItem = ref({
   name: '',
   slug: '',
   description: '',
   icon: '',
-  category: 'Ranks',
+  category: '',
   price_money: null,
   price_credits: null,
   item_type: 'rank',
@@ -24,7 +25,7 @@ const newItem = ref({
 })
 
 function resetNewItem() {
-  newItem.value = { name: '', slug: '', description: '', icon: '', category: 'Ranks', price_money: null, price_credits: null, item_type: 'rank', item_value: '', is_active: true }
+  newItem.value = { name: '', slug: '', description: '', icon: '', category: '', price_money: null, price_credits: null, item_type: 'rank', item_value: '', is_active: true }
 }
 
 async function fetchItems() {
@@ -113,12 +114,16 @@ onMounted(fetchItems)
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">Category</label>
-          <select v-model="newItem.category" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none">
-            <option>Ranks</option>
-            <option>Currency & Kits</option>
-            <option>Cosmetics</option>
-            <option>Flair</option>
-          </select>
+          <input
+            v-model="newItem.category"
+            type="text"
+            list="category-suggestions"
+            placeholder="e.g. VIP Packages, Cosmetics..."
+            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none"
+          />
+          <datalist id="category-suggestions">
+            <option v-for="cat in existingCategories" :key="cat" :value="cat" />
+          </datalist>
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-400 mb-1">Price ($)</label>
