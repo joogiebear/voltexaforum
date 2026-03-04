@@ -32,7 +32,9 @@ export const useMessagesStore = defineStore('messages', {
       this.activeConversationId = id
       try {
         const res = await getConversation(id)
-        this.messages = res.data.data?.messages || []
+        const raw = res.data.data
+        // API returns messages array directly (sorted newest first — reverse for chat order)
+        this.messages = (Array.isArray(raw) ? [...raw].reverse() : raw?.messages || [])
         // Update conversation in list to clear unread
         const convo = this.conversations.find(c => c.id === Number(id))
         if (convo) convo.unread_count = 0

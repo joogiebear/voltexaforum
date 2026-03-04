@@ -46,7 +46,7 @@ const activeConvo = computed(() => {
 
 const otherUser = computed(() => {
   if (!activeConvo.value) return null
-  return activeConvo.value.participants?.find(p => p.id !== authStore.user?.id) || null
+  return activeConvo.value.other_user || null
 })
 
 async function handleSend() {
@@ -72,7 +72,7 @@ function selectConversation(convo) {
 }
 
 function isOwnMessage(msg) {
-  return msg.user_id === authStore.user?.id
+  return msg.sender_id === authStore.user?.id
 }
 
 function timeAgo(date) {
@@ -111,7 +111,7 @@ function shouldShowDaySeparator(messages, index) {
 }
 
 function getOtherParticipant(convo) {
-  return convo.participants?.find(p => p.id !== authStore.user?.id) || {}
+  return convo.other_user || {}
 }
 </script>
 
