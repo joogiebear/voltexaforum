@@ -112,21 +112,6 @@ async function handleLogout() {
           </router-link>
         </nav>
 
-        <!-- Search bar (desktop) -->
-        <form @submit.prevent="handleSearch" class="hidden md:flex items-center flex-1 max-w-xs mx-4">
-          <div class="relative w-full">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs"
-               :class="isDark ? 'text-gray-500' : 'text-gray-400'" />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search..."
-              class="w-full pl-9 pr-3 py-1.5 rounded-lg border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-purple-accent"
-              :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'"
-            />
-          </div>
-        </form>
-
         <!-- Right side -->
         <div class="hidden md:flex items-center gap-2">
           <button
@@ -333,14 +318,14 @@ async function handleLogout() {
           </template>
         </div>
 
-        <!-- Mobile: search + hamburger -->
+        <!-- Mobile: theme toggle + hamburger -->
         <div class="flex md:hidden items-center gap-1">
           <button
-            @click="goToSearch"
-            class="p-2 rounded-lg"
-            :class="isDark ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'"
+            @click="toggleTheme"
+            class="p-2 rounded-lg transition-colors"
+            :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
           >
-            <i class="fa-solid fa-magnifying-glass"></i>
+            <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" class="text-base w-4 text-center" :style="isDark ? 'color: #a78bfa' : 'color: #f59e0b'"></i>
           </button>
           <button
             class="p-2 rounded-lg"
@@ -386,27 +371,13 @@ async function handleLogout() {
               {{ authStore.credits.toLocaleString() }} credits
             </router-link>
           </div>
-          <button
-            @click="toggleTheme"
-            class="ml-auto p-2 rounded-lg transition-colors shrink-0"
-            :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
-          >
-            <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" :style="isDark ? 'color:#a78bfa' : 'color:#f59e0b'"></i>
-          </button>
         </div>
       </template>
 
       <!-- Guest header -->
       <template v-else>
-        <div class="flex items-center justify-between px-5 py-4 border-b" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
+        <div class="flex items-center px-5 py-4 border-b" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
           <span class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Menu</span>
-          <button
-            @click="toggleTheme"
-            class="p-2 rounded-lg transition-colors"
-            :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
-          >
-            <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" :style="isDark ? 'color:#a78bfa' : 'color:#f59e0b'"></i>
-          </button>
         </div>
       </template>
 
