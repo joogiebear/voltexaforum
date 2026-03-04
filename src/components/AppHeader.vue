@@ -77,6 +77,8 @@ async function handleLogout() {
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between h-16">
+        <!-- Left: Logo + Nav -->
+        <div class="flex items-center gap-8">
         <!-- Logo -->
         <router-link to="/" class="flex items-center gap-2 font-bold text-xl shrink-0">
           <!-- Custom image -->
@@ -100,7 +102,7 @@ async function handleLogout() {
         </router-link>
 
         <!-- Desktop Nav -->
-        <nav class="hidden md:flex items-center gap-6 ml-8">
+        <nav class="hidden md:flex items-center gap-6">
           <router-link
             v-for="link in navLinks"
             :key="link.to"
@@ -111,6 +113,7 @@ async function handleLogout() {
             {{ link.label }}
           </router-link>
         </nav>
+        </div>
 
         <!-- Right side -->
         <div class="hidden md:flex items-center gap-2">
