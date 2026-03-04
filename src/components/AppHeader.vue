@@ -1,6 +1,7 @@
 <script setup>
-import { inject, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { inject, ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import Drawer from 'primevue/drawer'
 import { useAuthStore } from '../stores/auth'
 import { useNotificationsStore } from '../stores/notifications'
 import { useMessagesStore } from '../stores/messages'
@@ -11,6 +12,7 @@ import NotificationDropdown from './NotificationDropdown.vue'
 const isDark = inject('isDark')
 const toggleTheme = inject('toggleTheme')
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const notifStore = useNotificationsStore()
 const messagesStore = useMessagesStore()
@@ -20,6 +22,9 @@ const config = computed(() => forumStore.config || {})
 
 const mobileOpen = ref(false)
 const searchQuery = ref('')
+
+// Close drawer on route change
+watch(() => route.path, () => { mobileOpen.value = false })
 
 function handleSearch() {
   if (searchQuery.value.trim()) {
@@ -35,9 +40,9 @@ const avatarDropdownOpen = ref(false)
 const notifDropdownOpen = ref(false)
 
 const navLinks = [
-  { to: '/', label: 'Forum' },
-  { to: '/store', label: 'Store' },
-  { to: '/achievements', label: 'Achievements' },
+  { to: '/', label: 'Forum', icon: 'fa-solid fa-comments' },
+  { to: '/store', label: 'Store', icon: 'fa-solid fa-store' },
+  { to: '/achievements', label: 'Achievements', icon: 'fa-solid fa-trophy' },
 ]
 
 function isActive(path, route) {
@@ -328,7 +333,7 @@ async function handleLogout() {
           </template>
         </div>
 
-        <!-- Mobile search + hamburger -->
+        <!-- Mobile: search + hamburger -->
         <div class="flex md:hidden items-center gap-1">
           <button
             @click="goToSearch"
@@ -337,160 +342,178 @@ async function handleLogout() {
           >
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
+          <button
+            class="p-2 rounded-lg"
+            :class="isDark ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'"
+            @click="mobileOpen = true"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
-
-        <button
-          class="md:hidden p-2 rounded-lg"
-          :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
-          @click="mobileOpen = !mobileOpen"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              v-if="!mobileOpen"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-            <path
-              v-else
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
       </div>
+    </div>
+  </header>
 
-      <!-- Mobile menu -->
-      <div v-if="mobileOpen" class="md:hidden pb-4 space-y-2">
+  <!-- Mobile Drawer -->
+  <Drawer v-model:visible="mobileOpen" position="right" :style="{ width: '300px' }" :pt="{
+    root: { class: isDark ? '!bg-gray-900 !border-gray-800' : '!bg-white !border-gray-200' },
+    header: { class: 'hidden' },
+    content: { class: '!p-0 flex flex-col h-full' },
+    mask: { class: '!z-[60]' },
+  }">
+    <div class="flex flex-col h-full" :class="isDark ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'">
+
+      <!-- User profile header (logged in) -->
+      <template v-if="authStore.isLoggedIn">
+        <div class="flex items-center gap-3 px-5 py-5 border-b" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
+          <router-link :to="`/profile/${authStore.username}`">
+            <UserAvatar
+              :name="authStore.username"
+              :color="authStore.avatarColor"
+              :avatar-url="authStore.avatarUrl"
+              :online="true"
+              size="md"
+            />
+          </router-link>
+          <div class="min-w-0">
+            <p class="font-semibold text-sm truncate" :style="authStore.groupColor ? { color: authStore.groupColor } : {}">
+              {{ authStore.username }}
+            </p>
+            <router-link to="/credits" class="flex items-center gap-1 text-xs text-purple-accent mt-0.5">
+              <i class="fa-solid fa-coins text-xs"></i>
+              {{ authStore.credits.toLocaleString() }} credits
+            </router-link>
+          </div>
+          <button
+            @click="toggleTheme"
+            class="ml-auto p-2 rounded-lg transition-colors shrink-0"
+            :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
+          >
+            <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" :style="isDark ? 'color:#a78bfa' : 'color:#f59e0b'"></i>
+          </button>
+        </div>
+      </template>
+
+      <!-- Guest header -->
+      <template v-else>
+        <div class="flex items-center justify-between px-5 py-4 border-b" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
+          <span class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Menu</span>
+          <button
+            @click="toggleTheme"
+            class="p-2 rounded-lg transition-colors"
+            :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
+          >
+            <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" :style="isDark ? 'color:#a78bfa' : 'color:#f59e0b'"></i>
+          </button>
+        </div>
+      </template>
+
+      <!-- Nav links -->
+      <nav class="px-3 py-3 space-y-0.5">
         <router-link
           v-for="link in navLinks"
           :key="link.to"
           :to="link.to"
-          @click="mobileOpen = false"
-          class="block px-3 py-2 rounded-lg font-medium transition-colors"
-          :class="isActive(link.to, $route.path) ? 'text-purple-accent bg-purple-accent/10' : isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors"
+          :class="isActive(link.to, $route.path)
+            ? 'text-purple-accent bg-purple-accent/10'
+            : isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
         >
+          <i :class="link.icon" class="w-4 text-center text-sm"></i>
           {{ link.label }}
         </router-link>
+      </nav>
 
-        <template v-if="authStore.isLoggedIn">
-          <div class="border-t my-2" :class="isDark ? 'border-gray-800' : 'border-gray-200'" />
+      <!-- Logged-in user links -->
+      <template v-if="authStore.isLoggedIn">
+        <div class="border-t mx-3" :class="isDark ? 'border-gray-800' : 'border-gray-100'" />
+        <nav class="px-3 py-3 space-y-0.5">
           <router-link
-            to="/notifications"
-            @click="mobileOpen = false"
-            class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors"
+            :to="`/profile/${authStore.username}`"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
             :class="isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
           >
-            <span><i class="fa-solid fa-bell mr-1.5"></i> Notifications</span>
-            <span
-              v-if="notifStore.unreadCount > 0"
-              class="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none"
-            >
-              {{ notifStore.unreadCount }}
-            </span>
+            <i class="fa-solid fa-user w-4 text-center"></i> My Profile
           </router-link>
           <router-link
             to="/messages"
-            @click="mobileOpen = false"
-            class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
             :class="isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
           >
-            <span><i class="fa-solid fa-envelope mr-1.5"></i> Messages</span>
-            <span
-              v-if="messagesStore.dmUnreadCount > 0"
-              class="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none"
-            >
+            <i class="fa-solid fa-envelope w-4 text-center"></i>
+            Messages
+            <span v-if="messagesStore.dmUnreadCount > 0" class="ml-auto bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
               {{ messagesStore.dmUnreadCount }}
             </span>
           </router-link>
           <router-link
-            :to="`/profile/${authStore.username}`"
-            @click="mobileOpen = false"
-            class="block px-3 py-2 rounded-lg font-medium transition-colors"
+            to="/notifications"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
             :class="isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
           >
-            <i class="fa-solid fa-user mr-1.5"></i> Profile
+            <i class="fa-solid fa-bell w-4 text-center"></i>
+            Notifications
+            <span v-if="notifStore.unreadCount > 0" class="ml-auto bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
+              {{ notifStore.unreadCount > 99 ? '99+' : notifStore.unreadCount }}
+            </span>
           </router-link>
           <router-link
             to="/usercp"
-            @click="mobileOpen = false"
-            class="block px-3 py-2 rounded-lg font-medium transition-colors"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
             :class="isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
           >
-            <i class="fa-solid fa-gear mr-1.5"></i> Settings
+            <i class="fa-solid fa-gear w-4 text-center"></i> Settings
+          </router-link>
+
+          <!-- Admin / Mod links -->
+          <router-link
+            v-if="authStore.isAdmin"
+            to="/admin"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-red-400 hover:bg-red-400/10"
+          >
+            <i class="fa-solid fa-crown w-4 text-center"></i> Admin Panel
           </router-link>
           <router-link
-            to="/achievements"
-            @click="mobileOpen = false"
-            class="block px-3 py-2 rounded-lg font-medium transition-colors"
-            :class="isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
+            v-if="authStore.isModerator"
+            to="/admin/moderation"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-amber-400 hover:bg-amber-400/10"
           >
-            <i class="fa-solid fa-trophy mr-1.5"></i> Achievements
+            <i class="fa-solid fa-shield-halved w-4 text-center"></i> Moderation
           </router-link>
-          <div class="flex items-center gap-3 px-3 pt-2">
-            <button
-              @click="toggleTheme"
-              class="p-2 rounded-lg transition-colors"
-              :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
-            >
-              <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" class="text-base w-4 text-center" :style="isDark ? 'color: #a78bfa' : 'color: #f59e0b'"></i>
-            </button>
-            <router-link
-              to="/credits"
-              @click="mobileOpen = false"
-              class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold text-purple-accent"
-            >
-              <i class="fa-solid fa-coins text-xs"></i> {{ authStore.credits.toLocaleString() }}
-            </router-link>
-            <router-link :to="`/profile/${authStore.username}`" @click="mobileOpen = false">
-              <UserAvatar
-                :name="authStore.username"
-                :color="authStore.avatarColor"
-                :avatar-url="authStore.avatarUrl"
-                :online="true"
-                size="sm"
-              />
-            </router-link>
-          </div>
+        </nav>
+      </template>
+
+      <!-- Bottom: logout or login/register -->
+      <div class="mt-auto border-t px-3 py-3" :class="isDark ? 'border-gray-800' : 'border-gray-100'">
+        <template v-if="authStore.isLoggedIn">
           <button
-            @click="handleLogout(); mobileOpen = false"
-            class="block w-full text-left px-3 py-2 rounded-lg font-medium text-red-400 hover:bg-red-400/10 transition-colors"
+            @click="handleLogout"
+            class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-400/10 transition-colors"
           >
-            <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Log out
+            <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Log out
           </button>
         </template>
-
         <template v-else>
-          <div class="border-t my-2" :class="isDark ? 'border-gray-800' : 'border-gray-200'" />
-          <div class="flex items-center gap-3 px-3 pt-2">
-            <button
-              @click="toggleTheme"
-              class="p-2 rounded-lg transition-colors"
-              :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'"
+          <div class="flex gap-2">
+            <router-link
+              to="/login"
+              class="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              :class="isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
             >
-              <i :class="isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun'" class="text-base w-4 text-center" :style="isDark ? 'color: #a78bfa' : 'color: #f59e0b'"></i>
-            </button>
+              Login
+            </router-link>
+            <router-link
+              to="/register"
+              class="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-purple-accent hover:bg-purple-700 transition-colors"
+            >
+              Register
+            </router-link>
           </div>
-          <router-link
-            to="/login"
-            @click="mobileOpen = false"
-            class="block px-3 py-2 rounded-lg font-medium transition-colors"
-            :class="isDark ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
-          >
-            Login
-          </router-link>
-          <router-link
-            to="/register"
-            @click="mobileOpen = false"
-            class="block px-3 py-2 rounded-lg font-medium text-purple-accent"
-          >
-            Register
-          </router-link>
         </template>
       </div>
+
     </div>
-  </header>
+  </Drawer>
 </template>

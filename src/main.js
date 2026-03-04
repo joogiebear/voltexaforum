@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import PrimeVue from 'primevue/config'
+import Aura from '@primevue/themes/aura'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import './style.css'
 import App from './App.vue'
@@ -14,6 +16,13 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(PrimeVue, {
+  ripple: true,
+  theme: {
+    preset: Aura,
+    options: { darkModeSelector: '.dark' }
+  }
+})
 
 const init = async () => {
   const authStore = useAuthStore()
