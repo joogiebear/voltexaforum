@@ -122,6 +122,29 @@ async function handleSave() {
   }
 }
 
+async function handleDuplicate(plan) {
+  saving.value = true
+  try {
+    const payload = {
+      ...plan,
+      name: plan.name + ' (Copy)',
+      is_active: false,
+      is_featured: false,
+    }
+    delete payload.id
+    delete payload.slug
+    delete payload.created_at
+    delete payload.updated_at
+    const res = await createAdminUpgradePlan(payload)
+    plans.value.push(res.data.data)
+    toast.show('Plan duplicated')
+  } catch {
+    toast.show('Failed to duplicate', 'error')
+  } finally {
+    saving.value = false
+  }
+}
+
 async function handleDelete(plan) {
   if (!confirm(`Delete "${plan.name}"?`)) return
   try {
@@ -217,12 +240,17 @@ onMounted(fetchAll)
               </button>
             </td>
             <td class="px-5 py-3 text-right">
-              <button @click="openEdit(plan)"
+              <button @click="openEdit(plan)" title="Edit"
                 class="text-xs px-2.5 py-1 rounded mr-1 transition-colors"
                 :class="isDark ? 'text-gray-400 hover:text-violet-400 hover:bg-gray-700' : 'text-gray-400 hover:text-violet-600 hover:bg-gray-100'">
                 <i class="fa-solid fa-pen"></i>
               </button>
-              <button @click="handleDelete(plan)"
+              <button @click="handleDuplicate(plan)" title="Duplicate"
+                class="text-xs px-2.5 py-1 rounded mr-1 transition-colors"
+                :class="isDark ? 'text-gray-400 hover:text-blue-400 hover:bg-gray-700' : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'">
+                <i class="fa-solid fa-copy"></i>
+              </button>
+              <button @click="handleDelete(plan)" title="Delete"
                 class="text-xs px-2.5 py-1 rounded transition-colors"
                 :class="isDark ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700' : 'text-gray-400 hover:text-red-500 hover:bg-gray-100'">
                 <i class="fa-solid fa-trash"></i>
