@@ -181,6 +181,7 @@ function getOtherParticipant(convo) {
           <UserAvatar
             :name="getOtherParticipant(convo).username || '?'"
             :color="getOtherParticipant(convo).avatar_color || '#7c3aed'"
+            :avatarUrl="getOtherParticipant(convo).avatar_url || null"
             size="sm"
           />
           <div class="flex-1 min-w-0">
@@ -239,6 +240,7 @@ function getOtherParticipant(convo) {
               v-if="otherUser"
               :name="otherUser.username || '?'"
               :color="otherUser.avatar_color || '#7c3aed'"
+              :avatarUrl="otherUser.avatar_url || null"
               size="sm"
             />
             <div>
@@ -273,6 +275,7 @@ function getOtherParticipant(convo) {
                     v-if="!isOwnMessage(msg) && otherUser"
                     :name="otherUser.username || '?'"
                     :color="otherUser.avatar_color || '#7c3aed'"
+                    :avatarUrl="otherUser.avatar_url || null"
                     size="sm"
                     class="shrink-0 mb-1"
                   />
