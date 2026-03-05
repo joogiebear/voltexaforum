@@ -113,7 +113,7 @@ watch(() => route.params.username, () => {
                 :avatar-url="profile.avatar_url"
                 :online="profile.is_online"
                 size="xl"
-                class="ring-4 ring-black/60"
+                class="ring-4 ring-black/60 rounded-full"
               />
             </div>
             <div class="text-center sm:text-left flex-1 pb-1">
