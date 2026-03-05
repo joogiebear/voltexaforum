@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getAdminConfig, updateAdminConfig, getAdminGroups } from '../../../services/api'
+import { getAdminConfig, updateAdminConfig, getAdminGroups, getUnlockRequirements, updateUnlockRequirements } from '../../../services/api'
 import { useToastStore } from '../../../stores/toast'
 
 const toast = useToastStore()
@@ -70,7 +70,64 @@ async function save() {
   }
 }
 
-onMounted(fetchConfig)
+// Locked Content
+const lockedContent = ref({ locked_content_default_cost: 50, locked_content_tax_percent: 0 })
+const savingLocked = ref(false)
+
+async function fetchLockedContent() {
+  try {
+    const res = await getAdminConfig()
+    const d = res.data.data || res.data
+    if (d.locked_content_default_cost !== undefined) lockedContent.value.locked_content_default_cost = Number(d.locked_content_default_cost)
+    if (d.locked_content_tax_percent !== undefined) lockedContent.value.locked_content_tax_percent = Number(d.locked_content_tax_percent)
+  } catch {}
+}
+
+async function saveLockedContent() {
+  savingLocked.value = true
+  try {
+    await updateAdminConfig({ config: lockedContent.value })
+    toast.show('Locked content settings saved')
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Failed to save', 'error')
+  } finally {
+    savingLocked.value = false
+  }
+}
+
+// Unlock Requirements
+const unlockReqs = ref({ min_posts: 0, must_like: false })
+const savingUnlockReqs = ref(false)
+
+async function fetchUnlockReqs() {
+  try {
+    const res = await getUnlockRequirements()
+    const d = res.data.data || res.data
+    unlockReqs.value.min_posts = d.unlock_req_min_posts ?? 0
+    unlockReqs.value.must_like = d.unlock_req_must_like ?? false
+  } catch {}
+}
+
+async function saveUnlockReqs() {
+  savingUnlockReqs.value = true
+  try {
+    await updateUnlockRequirements({
+      unlock_req_min_posts: unlockReqs.value.min_posts,
+      unlock_req_must_like: unlockReqs.value.must_like,
+    })
+    toast.show('Unlock requirements saved')
+  } catch (e) {
+    toast.show(e.response?.data?.message || 'Failed to save', 'error')
+  } finally {
+    savingUnlockReqs.value = false
+  }
+}
+
+onMounted(() => {
+  fetchConfig()
+  fetchLockedContent()
+  fetchUnlockReqs()
+})
 </script>
 
 <template>
@@ -144,6 +201,63 @@ onMounted(fetchConfig)
               No groups found.
             </div>
           </div>
+        </div>
+      </div>
+      <!-- Locked Content -->
+      <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-6 space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-white">Locked Content</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Credits required to unlock <code class="bg-gray-700 px-1 rounded">[lock=N]</code> tagged content</p>
+          </div>
+          <button @click="saveLockedContent" :disabled="savingLocked" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
+            {{ savingLocked ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1.5">Default Unlock Cost (credits)</label>
+            <input v-model.number="lockedContent.locked_content_default_cost" type="number" min="0" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+            <p class="text-xs text-gray-500 mt-1">Used when no cost is specified in the tag (e.g. <code class="bg-gray-700 px-1 rounded">[lock]</code>)</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1.5">Tax Percentage (0–100)</label>
+            <input v-model.number="lockedContent.locked_content_tax_percent" type="number" min="0" max="100" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+            <p class="text-xs text-gray-500 mt-1">Added on top of base cost. 0 = no tax.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unlock Requirements -->
+      <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-6 space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-white">Unlock Requirements</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Minimum activity before users can reply. Groups with the bypass perk are exempt.</p>
+          </div>
+          <button @click="saveUnlockReqs" :disabled="savingUnlockReqs" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
+            {{ savingUnlockReqs ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1.5">Minimum Posts to Reply</label>
+            <input v-model.number="unlockReqs.min_posts" type="number" min="0" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
+            <p class="text-xs text-gray-500 mt-1">Set to 0 to disable.</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <div>
+            <div class="text-sm font-medium text-gray-300">Must Like Thread to Reply</div>
+            <div class="text-xs text-gray-500 mt-0.5">Require users to like the first post before replying</div>
+          </div>
+          <button
+            @click="unlockReqs.must_like = !unlockReqs.must_like"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+            :class="unlockReqs.must_like ? 'bg-violet-600' : 'bg-gray-600'"
+          >
+            <span class="inline-block h-4 w-4 rounded-full bg-white transition-transform" :class="unlockReqs.must_like ? 'translate-x-6' : 'translate-x-1'" />
+          </button>
         </div>
       </div>
     </template>

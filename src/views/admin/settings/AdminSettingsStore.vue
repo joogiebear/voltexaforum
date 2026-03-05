@@ -14,11 +14,7 @@ const storeSettings = ref({
   currency: 'USD',
 })
 
-const lockedContent = ref({
-  locked_content_default_cost: 50,
-  locked_content_tax_percent: 0,
-})
-const savingLocked = ref(false)
+
 
 async function fetchConfig() {
   loading.value = true
@@ -26,9 +22,7 @@ async function fetchConfig() {
     const res = await getAdminConfig()
     const d = res.data.data || res.data
     if (d.store) Object.assign(storeSettings.value, d.store)
-    if (d.locked_content_default_cost !== undefined) lockedContent.value.locked_content_default_cost = Number(d.locked_content_default_cost)
-    if (d.locked_content_tax_percent !== undefined) lockedContent.value.locked_content_tax_percent = Number(d.locked_content_tax_percent)
-  } catch (e) {
+      } catch (e) {
     toast.show(e.response?.data?.message || 'Failed to load config', 'error')
   } finally {
     loading.value = false
@@ -47,17 +41,6 @@ async function save() {
   }
 }
 
-async function saveLockedContent() {
-  savingLocked.value = true
-  try {
-    await updateAdminConfig({ config: lockedContent.value })
-    toast.show('Locked content settings saved')
-  } catch (e) {
-    toast.show(e.response?.data?.message || 'Failed to save', 'error')
-  } finally {
-    savingLocked.value = false
-  }
-}
 
 onMounted(fetchConfig)
 </script>
@@ -114,27 +97,7 @@ onMounted(fetchConfig)
           </div>
         </div>
       </div>
-      <!-- Locked Content Settings -->
-      <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-6 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-semibold text-white">Locked Content</h3>
-          <button @click="saveLockedContent" :disabled="savingLocked" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
-            {{ savingLocked ? 'Saving...' : 'Save' }}
-          </button>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div>
-            <label class="block text-sm font-medium text-gray-400 mb-1.5">Default Unlock Cost (credits)</label>
-            <input v-model.number="lockedContent.locked_content_default_cost" type="number" min="0" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-400 mb-1.5">Tax Percentage (0-100)</label>
-            <input v-model.number="lockedContent.locked_content_tax_percent" type="number" min="0" max="100" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
-            <p class="text-xs text-gray-500 mt-1">Added on top of the base cost. 0 = no tax.</p>
-          </div>
-        </div>
-      </div>
     </template>
   </div>
 </template>

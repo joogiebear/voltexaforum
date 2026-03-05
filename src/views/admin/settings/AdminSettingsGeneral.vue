@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { getAdminConfig, updateAdminConfig, uploadLogo, removeLogo, getUnlockRequirements, updateUnlockRequirements } from '../../../services/api'
+import { getAdminConfig, updateAdminConfig, uploadLogo, removeLogo } from '../../../services/api'
 import { useToastStore } from '../../../stores/toast'
 import { useForumStore } from '../../../stores/forum'
 
@@ -135,33 +135,7 @@ async function save() {
   }
 }
 
-// Unlock Requirements
-const unlockReqs = ref({ min_posts: 0, must_like: false })
-const savingUnlockReqs = ref(false)
 
-async function fetchUnlockReqs() {
-  try {
-    const res = await getUnlockRequirements()
-    const d = res.data.data || res.data
-    unlockReqs.value.min_posts = d.unlock_req_min_posts ?? 0
-    unlockReqs.value.must_like = d.unlock_req_must_like ?? false
-  } catch {}
-}
-
-async function saveUnlockReqs() {
-  savingUnlockReqs.value = true
-  try {
-    await updateUnlockRequirements({
-      unlock_req_min_posts: unlockReqs.value.min_posts,
-      unlock_req_must_like: unlockReqs.value.must_like,
-    })
-    toast.show('Unlock requirements saved')
-  } catch (e) {
-    toast.show(e.response?.data?.message || 'Failed to save unlock requirements', 'error')
-  } finally {
-    savingUnlockReqs.value = false
-  }
-}
 
 onMounted(() => {
   fetchConfig()
@@ -351,37 +325,7 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <!-- Unlock Requirements -->
-      <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-6 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-semibold text-white">Unlock Requirements</h3>
-          <button @click="saveUnlockReqs" :disabled="savingUnlockReqs" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
-            {{ savingUnlockReqs ? 'Saving...' : 'Save' }}
-          </button>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div>
-            <label class="block text-sm font-medium text-gray-400 mb-1.5">Minimum Posts to Reply</label>
-            <input v-model.number="unlockReqs.min_posts" type="number" min="0" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-200 focus:border-violet-500 focus:outline-none" />
-            <p class="text-xs text-gray-500 mt-1">Set to 0 to disable. Users with bypass_unlock perk are exempt.</p>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between py-2">
-          <div>
-            <div class="text-sm font-medium text-gray-300">Must Like to Reply</div>
-            <div class="text-xs text-gray-500 mt-0.5">Require users to like the first post before replying</div>
-          </div>
-          <button
-            @click="unlockReqs.must_like = !unlockReqs.must_like"
-            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-            :class="unlockReqs.must_like ? 'bg-violet-600' : 'bg-gray-600'"
-          >
-            <span class="inline-block h-4 w-4 rounded-full bg-white transition-transform" :class="unlockReqs.must_like ? 'translate-x-6' : 'translate-x-1'" />
-          </button>
-        </div>
-      </div>
     </template>
   </div>
 </template>

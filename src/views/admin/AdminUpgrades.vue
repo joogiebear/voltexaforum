@@ -24,9 +24,19 @@ const TERM_OPTIONS = [
 ]
 
 const FEATURE_TYPES = [
-  { value: 'check', label: '✅ Included' },
-  { value: 'cross', label: '❌ Not included' },
-  { value: 'stat',  label: '📊 Stat (with value)' },
+  { value: 'check',                 label: '✅ Included (display only)' },
+  { value: 'cross',                 label: '❌ Not included (display only)' },
+  { value: 'stat',                  label: '📊 Stat (with value)' },
+  { value: 'no_ads',                label: '🚫 No Advertisements' },
+  { value: 'bypass_unlock',         label: '🔓 Bypass Unlock Requirements' },
+  { value: 'profile_cover',         label: '🖼️ Profile Cover Photo' },
+  { value: 'custom_css',            label: '🎨 Custom Profile CSS' },
+  { value: 'locked_content_bypass', label: '🔑 Unlock Locked Content Free' },
+  { value: 'change_username',       label: '✏️ Change Username' },
+  { value: 'userbar_hue',           label: '🌈 Userbar Hue' },
+  { value: 'username_color',        label: '🖌️ Custom Username Color' },
+  { value: 'awards_reorder',        label: '🏆 Reorder Awards' },
+  { value: 'pre_access',            label: '⚡ Pre-Access to New Features' },
 ]
 
 function emptyForm() {
