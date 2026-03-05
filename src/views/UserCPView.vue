@@ -655,7 +655,8 @@ async function handleRemoveSession(id) {
                     {{ avatarUploading ? 'Uploading...' : 'Upload' }}
                   </button>
                   <p v-else class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
-                    Click avatar to change. JPG, PNG, GIF, WebP &mdash; max 2MB
+                    Click avatar to change. JPG, PNG, GIF, WebP &mdash; max 5MB<br>
+                    Recommended: <strong>200×200 px</strong>. Auto-resized to 300×300 and converted to WebP.
                   </p>
                 </div>
               </div>
@@ -1089,7 +1090,8 @@ async function handleRemoveSession(id) {
                 </template>
               </div>
               <p class="text-xs mt-2" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
-                JPG, PNG, GIF, WebP &mdash; max 5MB
+                JPG, PNG, GIF, WebP &mdash; max 5MB<br>
+                Recommended: <strong>1500×500 px</strong>. Auto-resized and converted to WebP.
               </p>
             </div>
 
@@ -1153,7 +1155,7 @@ async function handleRemoveSession(id) {
                     {{ postbitBgRemoving ? 'Removing...' : 'Remove' }}
                   </button>
                 </template>
-                <p class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">GIF, PNG, JPG, WebP &mdash; max 5MB</p>
+                <p class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">GIF, PNG, JPG, WebP &mdash; max 5MB<br>Recommended: <strong>1000×250 px</strong>. Auto-resized and converted to WebP.</p>
               </div>
             </div>
           </div>
