@@ -55,7 +55,7 @@ watch(() => route.params.username, () => {
     <!-- Loading -->
     <div v-if="loading" class="space-y-4">
       <div class="rounded-xl overflow-hidden animate-pulse" :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'">
-        <div style="height: 224px;" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'" />
+        <div style="height: 280px;" :class="isDark ? 'bg-gray-800' : 'bg-gray-200'" />
         <div class="px-6 pb-6 pt-12 flex items-center gap-5">
           <div class="w-24 h-24 rounded-full -mt-20 border-4" :class="isDark ? 'bg-gray-800 border-gray-900' : 'bg-gray-200 border-white'" />
           <div class="flex-1 space-y-3">
@@ -85,7 +85,7 @@ watch(() => route.params.username, () => {
         :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'"
       >
         <div
-          style="height: 224px; position: relative; display: block;"
+          style="height: 280px; position: relative; display: block;"
           :style="profile.cover_url
             ? {
                 backgroundImage: `url(${profile.cover_url})`,
