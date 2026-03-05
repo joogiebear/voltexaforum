@@ -100,7 +100,7 @@ watch(() => route.params.username, () => {
         <!-- Bottom gradient so text row is always readable -->
         <div
           v-if="profile.cover_url"
-          style="position: absolute; bottom: 0; left: 0; right: 0; height: 120px; pointer-events: none; z-index: 0; background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);"
+          style="position: absolute; bottom: 0; left: 0; right: 0; height: 160px; pointer-events: none; z-index: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);"
         />
         <!-- Spacer to create the banner height above the profile info -->
         <div style="height: 200px;" />
