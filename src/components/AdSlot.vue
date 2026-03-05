@@ -21,16 +21,16 @@ onMounted(async () => {
   <div v-if="currentAd">
     <a v-if="currentAd.url" :href="currentAd.url" target="_blank" rel="noopener noreferrer">
       <img
-        v-if="currentAd.image_path"
-        :src="currentAd.image_path"
+        v-if="currentAd.image_url"
+        :src="currentAd.image_url"
         :alt="currentAd.title"
         class="w-full object-cover rounded-lg"
         :class="position === 'header' ? 'max-h-24' : 'max-h-64'"
       />
     </a>
     <img
-      v-else-if="currentAd.image_path"
-      :src="currentAd.image_path"
+      v-else-if="currentAd.image_url"
+      :src="currentAd.image_url"
       :alt="currentAd.title"
       class="w-full object-cover rounded-lg"
       :class="position === 'header' ? 'max-h-24' : 'max-h-64'"

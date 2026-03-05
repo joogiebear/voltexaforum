@@ -44,7 +44,7 @@ function startEdit(ad) {
     position: ad.position,
     display_order: ad.display_order || 0,
     image: null,
-    existingImage: ad.image_path || null,
+    existingImage: ad.image_url || null,
   }
   imagePreview.value = null
   showForm.value = true
@@ -204,7 +204,7 @@ onMounted(fetchAds)
                   >{{ ad.position }}</span>
                 </td>
                 <td class="px-5 py-3">
-                  <img v-if="ad.image_path" :src="ad.image_path" class="h-8 w-16 object-cover rounded" />
+                  <img v-if="ad.image_url" :src="ad.image_url" class="h-8 w-16 object-cover rounded" />
                   <span v-else class="text-gray-600 text-xs">No image</span>
                 </td>
                 <td class="px-5 py-3">
