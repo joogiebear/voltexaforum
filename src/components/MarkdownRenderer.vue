@@ -80,9 +80,9 @@ function addLockOverlay(el, cost) {
   const overlay = document.createElement('div')
   overlay.className = 'locked-content-overlay'
   overlay.innerHTML = `
-    <i class="fa-solid fa-lock" style="font-size:1.25rem"></i>
-    <span style="font-weight:700">Locked Content</span>
-    <span style="font-size:0.75rem;opacity:0.8">Click to unlock for ${cost} credits</span>
+    <i class="fa-solid fa-lock" style="font-size:1rem"></i>
+    <span style="font-weight:700;font-size:0.8rem">Locked Content</span>
+    <span style="font-size:0.7rem;opacity:0.8">Click to unlock for ${cost} credits</span>
   `
   el.appendChild(overlay)
 }
@@ -344,8 +344,8 @@ onBeforeUnmount(() => {
   filter: blur(6px);
   user-select: none;
   pointer-events: none;
-  padding: 0.75rem;
-  min-height: 4rem;
+  padding: 1rem;
+  min-height: 6rem;
 }
 .markdown-content :deep(.locked-content-overlay) {
   position: absolute;
@@ -354,10 +354,13 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  padding: 1rem;
   background: rgba(0,0,0,0.55);
   color: white;
   transition: background 0.2s;
+  text-align: center;
+  line-height: 1.4;
 }
 .markdown-content :deep(.locked-content:hover .locked-content-overlay) {
   background: rgba(124, 58, 237, 0.5);
