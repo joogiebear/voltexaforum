@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject, ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { computed, inject, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { marked } from 'marked'
 import { useAuthStore } from '../stores/auth'
 import { useForumStore } from '../stores/forum'
@@ -187,8 +187,21 @@ function cancelUnlock() {
   modal.value.show = false
 }
 
+// Run on mount (rendered already has value on first render — watch alone misses it)
+onMounted(() => nextTick(() => { bindSpoilers(); bindLockedContent() }))
+
+// Re-run if content updates (e.g. edit)
 watch(rendered, () => nextTick(() => { bindSpoilers(); bindLockedContent() }))
-watch(isAuthor, () => nextTick(() => bindLockedContent()))
+
+// Re-run when auth state resolves (author check may flip after user loads)
+watch(isAuthor, (val) => {
+  if (!val || !container.value) return
+  // Clear bound flag so author bypass can be applied retroactively
+  container.value.querySelectorAll('.locked-content[data-bound]').forEach((el) => {
+    delete el.dataset.bound
+  })
+  nextTick(() => bindLockedContent())
+})
 
 onBeforeUnmount(() => {
   if (!container.value) return
