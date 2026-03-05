@@ -1,6 +1,8 @@
 <script setup>
 import { computed, inject, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { marked } from 'marked'
+import { useAuthStore } from '../stores/auth'
+import { unlockContent } from '../services/api'
 
 const props = defineProps({
   content: { type: String, default: '' },
@@ -8,6 +10,7 @@ const props = defineProps({
 })
 
 const isDark = inject('isDark')
+const authStore = useAuthStore()
 const container = ref(null)
 
 function sanitize(html) {
@@ -34,7 +37,45 @@ function toggleSpoiler(e) {
   e.currentTarget.classList.toggle('revealed')
 }
 
-watch(rendered, () => nextTick(bindSpoilers))
+function bindLockedContent() {
+  if (!container.value) return
+  container.value.querySelectorAll('.locked-content').forEach((el) => {
+    if (el.dataset.bound) return
+    el.dataset.bound = '1'
+
+    // Add overlay
+    if (!el.querySelector('.locked-content-overlay')) {
+      const overlay = document.createElement('div')
+      overlay.className = 'locked-content-overlay'
+      overlay.innerHTML = `<i class="fa-solid fa-lock"></i><span>Click to unlock (${el.dataset.cost || '?'} credits)</span>`
+      el.appendChild(overlay)
+    }
+
+    el.addEventListener('click', async () => {
+      if (el.dataset.unlocked === '1') return
+      const hash = el.dataset.hash
+      const cost = parseInt(el.dataset.cost || '0')
+      try {
+        const res = await unlockContent({ content_hash: hash, cost })
+        if (res.data.unlocked) {
+          el.dataset.unlocked = '1'
+          const inner = el.querySelector('.locked-content-inner')
+          if (inner) inner.style.filter = 'none'
+          const overlay = el.querySelector('.locked-content-overlay')
+          if (overlay) overlay.remove()
+          if (!res.data.already_owned && res.data.credits_spent) {
+            await authStore.fetchUser()
+          }
+        }
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to unlock'
+        alert(msg)
+      }
+    })
+  })
+}
+
+watch(rendered, () => nextTick(() => { bindSpoilers(); bindLockedContent() }))
 
 onBeforeUnmount(() => {
   if (!container.value) return
@@ -126,5 +167,35 @@ onBeforeUnmount(() => {
 }
 .markdown-content :deep(.mention:hover) {
   text-decoration: underline;
+}
+
+/* Locked content */
+.markdown-content :deep(.locked-content) {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  margin: 0.5rem 0;
+  cursor: pointer;
+}
+.markdown-content :deep(.locked-content-inner) {
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+  padding: 0.75rem;
+  min-height: 4rem;
+}
+.markdown-content :deep(.locked-content-overlay) {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 </style>

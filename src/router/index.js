@@ -65,6 +65,8 @@ const routes = [
       { path: 'store', redirect: '/admin/store/items' },
       { path: 'store/items', name: 'AdminStoreItems', component: () => import('../views/admin/AdminStoreItems.vue'), meta: { title: 'Store Items' } },
       { path: 'store/purchases', name: 'AdminStorePurchases', component: () => import('../views/admin/AdminStorePurchases.vue'), meta: { title: 'Purchases' } },
+      // Advertisements
+      { path: 'advertisements', name: 'AdminAdvertisements', component: () => import('../views/admin/AdminAdvertisements.vue'), meta: { title: 'Advertisements' } },
       // Gamification
       { path: 'achievements', name: 'AdminAchievements', component: () => import('../views/admin/AdminAchievements.vue'), meta: { title: 'Achievements' } },
       { path: 'awards', name: 'AdminAwards', component: () => import('../views/admin/AdminAwards.vue'), meta: { title: 'Awards' } },

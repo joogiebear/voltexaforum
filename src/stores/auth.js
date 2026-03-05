@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', {
     credits: (state) => state.user?.credits || 0,
     avatarColor: (state) => state.user?.avatar_color || '#7c3aed',
     avatarUrl: (state) => state.user?.avatar_url || null,
+    perks: (state) => state.user?.perks ?? [],
   },
   actions: {
     async login(credentials) {
@@ -56,6 +57,9 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.user = null
       localStorage.removeItem('voltexahub_token')
+    },
+    hasPerk(type) {
+      return this.perks.includes(type)
     },
     setAvatarUrl(url) {
       if (this.user) this.user = { ...this.user, avatar_url: url }

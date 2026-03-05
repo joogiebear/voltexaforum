@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref, onMounted } from 'vue'
+import { inject, ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import {
   updateProfile,
@@ -13,6 +13,14 @@ import {
   uploadAvatar,
   uploadPostbitBg,
   removePostbitBg,
+  uploadCover,
+  removeCover,
+  saveCustomCss as apiSaveCustomCss,
+  saveUsernameColor as apiSaveUsernameColor,
+  saveUserbarHue as apiSaveUserbarHue,
+  changeUsername as apiChangeUsername,
+  saveAwardsOrder as apiSaveAwardsOrder,
+  getUserAwards,
 } from '../services/api'
 import UserAvatar from '../components/UserAvatar.vue'
 
@@ -24,14 +32,24 @@ const saving = ref(false)
 const saveMessage = ref(null)
 const saveError = ref(null)
 
-const sidebarLinks = [
+const allSidebarLinks = [
   { id: 'profile', label: 'Profile', icon: 'fa-solid fa-user' },
   { id: 'account', label: 'Account', icon: 'fa-solid fa-lock' },
   { id: 'notifications', label: 'Notifications', icon: 'fa-solid fa-bell' },
   { id: 'privacy', label: 'Privacy', icon: 'fa-solid fa-eye' },
   { id: 'cosmetics', label: 'Cosmetics', icon: 'fa-solid fa-palette' },
   { id: 'sessions', label: 'Sessions', icon: 'fa-solid fa-desktop' },
+  { id: 'cover', label: 'Profile Cover', icon: 'fa-solid fa-image', perk: 'profile_cover' },
+  { id: 'customcss', label: 'Custom CSS', icon: 'fa-solid fa-code', perk: 'custom_css' },
+  { id: 'username-color', label: 'Username Color', icon: 'fa-solid fa-palette', perk: 'username_color' },
+  { id: 'userbar-hue', label: 'Userbar Hue', icon: 'fa-solid fa-sliders', perk: 'userbar_hue' },
+  { id: 'change-username', label: 'Change Username', icon: 'fa-solid fa-user-pen', perk: 'change_username' },
+  { id: 'awards-order', label: 'Awards Order', icon: 'fa-solid fa-trophy', perk: 'awards_reorder' },
 ]
+
+const sidebarLinks = computed(() =>
+  allSidebarLinks.filter(link => !link.perk || authStore.hasPerk(link.perk))
+)
 
 // Avatar upload
 const avatarFileInput = ref(null)
@@ -180,6 +198,166 @@ const ownedCosmetics = ref([])
 // Sessions
 const sessions = ref([])
 
+// Cover Photo
+const coverFileInput = ref(null)
+const coverPreview = ref(null)
+const coverFile = ref(null)
+const coverUploading = ref(false)
+const coverRemoving = ref(false)
+
+function handleCoverSelect(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    saveError.value = 'Cover photo must be under 5MB.'
+    return
+  }
+  coverFile.value = file
+  const reader = new FileReader()
+  reader.onload = (ev) => { coverPreview.value = ev.target.result }
+  reader.readAsDataURL(file)
+}
+
+async function handleCoverUpload() {
+  if (!coverFile.value) return
+  coverUploading.value = true
+  clearMessages()
+  try {
+    const formData = new FormData()
+    formData.append('image', coverFile.value)
+    const res = await uploadCover(formData)
+    authStore.user.cover_url = res.data.cover_url
+    coverPreview.value = null
+    coverFile.value = null
+    saveMessage.value = 'Cover photo uploaded!'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to upload cover photo.'
+  } finally {
+    coverUploading.value = false
+  }
+}
+
+async function handleCoverRemove() {
+  coverRemoving.value = true
+  clearMessages()
+  try {
+    await removeCover()
+    authStore.user.cover_url = null
+    coverPreview.value = null
+    coverFile.value = null
+    saveMessage.value = 'Cover photo removed.'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to remove cover photo.'
+  } finally {
+    coverRemoving.value = false
+  }
+}
+
+// Custom CSS
+const customCss = ref('')
+
+async function handleSaveCustomCss() {
+  clearMessages()
+  saving.value = true
+  try {
+    await apiSaveCustomCss({ css: customCss.value })
+    authStore.user.custom_css = customCss.value
+    saveMessage.value = 'Custom CSS saved!'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to save custom CSS.'
+  } finally {
+    saving.value = false
+  }
+}
+
+// Username Color
+const usernameColor = ref('#7c3aed')
+
+async function handleSaveUsernameColor() {
+  clearMessages()
+  saving.value = true
+  try {
+    await apiSaveUsernameColor({ color: usernameColor.value })
+    authStore.user.username_color = usernameColor.value
+    saveMessage.value = 'Username color saved!'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to save username color.'
+  } finally {
+    saving.value = false
+  }
+}
+
+async function handleResetUsernameColor() {
+  clearMessages()
+  saving.value = true
+  try {
+    await apiSaveUsernameColor({ color: null })
+    authStore.user.username_color = null
+    usernameColor.value = '#7c3aed'
+    saveMessage.value = 'Username color reset.'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to reset username color.'
+  } finally {
+    saving.value = false
+  }
+}
+
+// Userbar Hue
+const userbarHue = ref(0)
+
+async function handleSaveUserbarHue() {
+  clearMessages()
+  saving.value = true
+  try {
+    await apiSaveUserbarHue({ hue: userbarHue.value })
+    authStore.user.userbar_hue = userbarHue.value
+    saveMessage.value = 'Userbar hue saved!'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to save userbar hue.'
+  } finally {
+    saving.value = false
+  }
+}
+
+// Change Username
+const newUsername = ref('')
+
+const usernameChangedAt = computed(() => authStore.user?.username_changed_at ? new Date(authStore.user.username_changed_at) : null)
+const nextUsernameDate = computed(() => usernameChangedAt.value ? new Date(usernameChangedAt.value.getTime() + 30 * 86400000) : null)
+const canChangeUsername = computed(() => !usernameChangedAt.value || nextUsernameDate.value <= new Date())
+
+async function handleChangeUsername() {
+  clearMessages()
+  saving.value = true
+  try {
+    await apiChangeUsername({ username: newUsername.value })
+    saveMessage.value = 'Username changed successfully!'
+    newUsername.value = ''
+    await authStore.fetchUser()
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to change username.'
+  } finally {
+    saving.value = false
+  }
+}
+
+// Awards Order
+const userAwards = ref([])
+
+async function handleSaveAwardsOrder() {
+  clearMessages()
+  saving.value = true
+  try {
+    const ids = userAwards.value.map(a => a.id)
+    await apiSaveAwardsOrder({ award_ids: ids })
+    saveMessage.value = 'Awards order saved!'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to save awards order.'
+  } finally {
+    saving.value = false
+  }
+}
+
 onMounted(async () => {
   // Populate from auth user
   const user = authStore.user
@@ -207,6 +385,9 @@ onMounted(async () => {
     postHistory.value = user.privacy?.post_history || 'everyone'
     hideFromSearch.value = user.privacy?.hide_from_search || false
     allowDMs.value = user.privacy?.allow_dms !== false
+    customCss.value = user.custom_css || ''
+    usernameColor.value = user.username_color || '#7c3aed'
+    userbarHue.value = user.userbar_hue ?? 0
   }
 
   // Fetch cosmetics & sessions
@@ -218,6 +399,14 @@ onMounted(async () => {
     ownedCosmetics.value = cosmeticsRes.data.data
     sessions.value = sessionsRes.data.data
   } catch {}
+
+  // Fetch user awards for awards-order section
+  if (authStore.hasPerk('awards_reorder')) {
+    try {
+      const awardsRes = await getUserAwards()
+      userAwards.value = awardsRes.data.data || []
+    } catch {}
+  }
 })
 
 function clearMessages() {
@@ -881,6 +1070,274 @@ async function handleRemoveSession(id) {
             <div v-if="!sessions.length" class="text-center py-8" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
               No active sessions found.
             </div>
+          </div>
+
+          <!-- COVER PHOTO -->
+          <div v-show="activeSection === 'cover'">
+            <h2 class="text-xl font-bold mb-6">Profile Cover</h2>
+
+            <div class="mb-6">
+              <div
+                class="w-full h-48 rounded-lg overflow-hidden border flex items-center justify-center mb-4"
+                :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-100'"
+              >
+                <img
+                  v-if="coverPreview"
+                  :src="coverPreview"
+                  class="w-full h-full object-cover"
+                />
+                <img
+                  v-else-if="authStore.user?.cover_url"
+                  :src="authStore.user.cover_url"
+                  class="w-full h-full object-cover"
+                />
+                <i v-else class="fa-solid fa-image text-4xl" :class="isDark ? 'text-gray-600' : 'text-gray-400'"></i>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <input
+                  ref="coverFileInput"
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  class="hidden"
+                  @change="handleCoverSelect"
+                />
+                <button
+                  v-if="coverFile"
+                  @click="handleCoverUpload"
+                  :disabled="coverUploading"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-purple-accent hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  <svg v-if="coverUploading" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  {{ coverUploading ? 'Uploading...' : 'Upload' }}
+                </button>
+                <template v-else>
+                  <button
+                    @click="coverFileInput?.click()"
+                    class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
+                    :class="isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'"
+                  >
+                    <i class="fa-solid fa-upload mr-1.5"></i> Choose Image
+                  </button>
+                  <button
+                    v-if="authStore.user?.cover_url"
+                    @click="handleCoverRemove"
+                    :disabled="coverRemoving"
+                    class="px-4 py-2 rounded-lg text-sm font-medium text-red-400 border border-red-400/30 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+                  >
+                    {{ coverRemoving ? 'Removing...' : 'Remove' }}
+                  </button>
+                </template>
+              </div>
+              <p class="text-xs mt-2" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                JPG, PNG, GIF, WebP &mdash; max 5MB
+              </p>
+            </div>
+          </div>
+
+          <!-- CUSTOM CSS -->
+          <div v-show="activeSection === 'customcss'">
+            <h2 class="text-xl font-bold mb-6">Custom CSS</h2>
+
+            <p class="text-sm mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400">
+              Custom CSS is applied to your profile page only. Malicious CSS may be removed by staff.
+            </p>
+
+            <textarea
+              v-model="customCss"
+              rows="15"
+              placeholder="/* Your custom CSS here */"
+              class="w-full px-4 py-3 rounded-lg border font-mono text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-purple-accent resize-y"
+              :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'"
+            />
+            <p class="text-xs mt-1 mb-4" :class="isDark ? 'text-gray-500' : 'text-gray-400'">{{ customCss.length }}/5000 characters</p>
+
+            <button
+              @click="handleSaveCustomCss"
+              :disabled="saving"
+              class="px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-accent to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
+            >
+              <svg v-if="saving" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {{ saving ? 'Saving...' : 'Save Custom CSS' }}
+            </button>
+          </div>
+
+          <!-- USERNAME COLOR -->
+          <div v-show="activeSection === 'username-color'">
+            <h2 class="text-xl font-bold mb-6">Username Color</h2>
+
+            <div class="mb-6">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Pick a color</label>
+              <div class="flex items-center gap-4">
+                <input
+                  type="color"
+                  v-model="usernameColor"
+                  class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0"
+                />
+                <span class="font-bold text-lg" :style="{ color: usernameColor }">{{ authStore.username }}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button
+                @click="handleSaveUsernameColor"
+                :disabled="saving"
+                class="px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-accent to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg v-if="saving" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                {{ saving ? 'Saving...' : 'Save Color' }}
+              </button>
+              <button
+                @click="handleResetUsernameColor"
+                :disabled="saving"
+                class="px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+                :class="isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- USERBAR HUE -->
+          <div v-show="activeSection === 'userbar-hue'">
+            <h2 class="text-xl font-bold mb-6">Userbar Hue</h2>
+
+            <div class="mb-6">
+              <label class="block text-sm font-medium mb-3" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Hue Rotation ({{ userbarHue }}&deg;)</label>
+              <input
+                type="range"
+                v-model.number="userbarHue"
+                min="0"
+                max="360"
+                class="w-full accent-purple-500"
+              />
+              <div class="mt-4 flex items-center gap-3">
+                <span class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Preview:</span>
+                <span
+                  class="inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full bg-purple-accent/20 text-purple-accent border border-purple-accent/40"
+                  :style="{ filter: `hue-rotate(${userbarHue}deg)` }"
+                >
+                  {{ authStore.username }}
+                </span>
+              </div>
+            </div>
+
+            <button
+              @click="handleSaveUserbarHue"
+              :disabled="saving"
+              class="px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-accent to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
+            >
+              <svg v-if="saving" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {{ saving ? 'Saving...' : 'Save Hue' }}
+            </button>
+          </div>
+
+          <!-- CHANGE USERNAME -->
+          <div v-show="activeSection === 'change-username'">
+            <h2 class="text-xl font-bold mb-6">Change Username</h2>
+
+            <div v-if="!canChangeUsername" class="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm">
+              You can change your username again after {{ nextUsernameDate?.toLocaleDateString() }}.
+            </div>
+
+            <div class="mb-6">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">New Username</label>
+              <input
+                type="text"
+                v-model="newUsername"
+                placeholder="Enter new username..."
+                :disabled="!canChangeUsername"
+                class="w-full px-4 py-2.5 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-purple-accent"
+                :class="[
+                  isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400',
+                  !canChangeUsername ? 'opacity-50 cursor-not-allowed' : ''
+                ]"
+              />
+              <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-400'">3-30 characters, alphanumeric only. Can change once every 30 days.</p>
+            </div>
+
+            <button
+              @click="handleChangeUsername"
+              :disabled="saving || !canChangeUsername || !newUsername"
+              class="px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-accent to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
+            >
+              <svg v-if="saving" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {{ saving ? 'Saving...' : 'Change Username' }}
+            </button>
+          </div>
+
+          <!-- AWARDS ORDER -->
+          <div v-show="activeSection === 'awards-order'">
+            <h2 class="text-xl font-bold mb-6">Awards Order</h2>
+
+            <div v-if="userAwards.length" class="space-y-2 mb-6">
+              <div
+                v-for="(award, index) in userAwards"
+                :key="award.id"
+                class="flex items-center gap-3 p-3 rounded-lg border cursor-move"
+                :class="isDark ? 'border-gray-800 bg-gray-800/30' : 'border-gray-100 bg-gray-50'"
+              >
+                <i class="fa-solid fa-grip-vertical text-sm" :class="isDark ? 'text-gray-600' : 'text-gray-400'"></i>
+                <img
+                  v-if="award.award?.icon_url"
+                  :src="award.award.icon_url"
+                  class="w-8 h-8 object-contain"
+                />
+                <div v-else class="w-8 h-8 rounded flex items-center justify-center bg-yellow-500/10">
+                  <i class="fa-solid fa-award text-yellow-500"></i>
+                </div>
+                <span class="font-medium text-sm">{{ award.award?.name || 'Award' }}</span>
+                <div class="ml-auto flex gap-1">
+                  <button
+                    v-if="index > 0"
+                    @click="userAwards.splice(index - 1, 0, userAwards.splice(index, 1)[0])"
+                    class="px-2 py-1 rounded text-xs"
+                    :class="isDark ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-200'"
+                  >
+                    <i class="fa-solid fa-arrow-up"></i>
+                  </button>
+                  <button
+                    v-if="index < userAwards.length - 1"
+                    @click="userAwards.splice(index + 1, 0, userAwards.splice(index, 1)[0])"
+                    class="px-2 py-1 rounded text-xs"
+                    :class="isDark ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-200'"
+                  >
+                    <i class="fa-solid fa-arrow-down"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="mb-6 text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+              No awards to reorder.
+            </div>
+
+            <button
+              v-if="userAwards.length"
+              @click="handleSaveAwardsOrder"
+              :disabled="saving"
+              class="px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-accent to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-200 disabled:opacity-50 flex items-center gap-2"
+            >
+              <svg v-if="saving" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {{ saving ? 'Saving...' : 'Save Order' }}
+            </button>
           </div>
         </div>
       </div>

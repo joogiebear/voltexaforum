@@ -215,3 +215,30 @@ export const resendVerification = () => api.post('/email/resend')
 
 export const uploadImage = (formData) => api.post("/media/image", formData, { headers: { "Content-Type": "multipart/form-data" } })
 export const previewContent = (data) => api.post("/content/preview", data)
+
+// Ads
+export const getAds = () => api.get('/ads')
+
+// User perks
+export const uploadCover = (formData) => api.post('/user/cover', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+export const removeCover = () => api.delete('/user/cover')
+export const saveCustomCss = (data) => api.post('/user/custom-css', data)
+export const saveUsernameColor = (data) => api.post('/user/username-color', data)
+export const saveUserbarHue = (data) => api.post('/user/userbar-hue', data)
+export const changeUsername = (data) => api.post('/user/change-username', data)
+export const saveAwardsOrder = (data) => api.post('/user/awards-order', data)
+
+// Locked content
+export const unlockContent = (data) => api.post('/locked-content/unlock', data)
+export const checkUnlocked = (hash) => api.get('/locked-content/check', { params: { content_hash: hash } })
+
+// Admin - Advertisements
+export const getAdminAds = () => api.get('/admin/advertisements')
+export const createAd = (data) => api.post('/admin/advertisements', data)
+export const updateAd = (id, data) => api.put(`/admin/advertisements/${id}`, data)
+export const deleteAd = (id) => api.delete(`/admin/advertisements/${id}`)
+export const toggleAd = (id) => api.post(`/admin/advertisements/${id}/toggle`)
+
+// Admin - Unlock Requirements
+export const getUnlockRequirements = () => api.get('/admin/unlock-requirements')
+export const updateUnlockRequirements = (data) => api.put('/admin/unlock-requirements', data)

@@ -85,9 +85,14 @@ watch(() => route.params.username, () => {
         :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'"
       >
         <div
-          class="h-36 relative"
-          :style="{ background: `linear-gradient(135deg, ${bannerColor}30, ${bannerColor}15)` }"
+          class="h-36 relative overflow-hidden"
+          :style="!profile.cover_url ? { background: `linear-gradient(135deg, ${bannerColor}30, ${bannerColor}15)` } : {}"
         >
+          <img
+            v-if="profile.cover_url"
+            :src="profile.cover_url"
+            class="absolute inset-0 w-full h-full object-cover"
+          />
           <div class="absolute inset-0" :style="{ background: `linear-gradient(to bottom, transparent 50%, ${isDark ? '#111827' : '#ffffff'})` }" />
         </div>
         <div class="px-6 pb-6 relative">
@@ -467,6 +472,8 @@ watch(() => route.params.username, () => {
           <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-500'">No awards yet.</p>
         </div>
       </div>
+      <!-- Custom CSS -->
+      <component v-if="profile.custom_css" is="style">{{ profile.custom_css }}</component>
     </template>
 
     <!-- User not found -->
