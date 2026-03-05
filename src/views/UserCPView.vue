@@ -14,6 +14,7 @@ import {
   uploadPostbitBg,
   removePostbitBg,
   uploadCover,
+  updateCoverOverlay,
   removeCover,
   saveCustomCss as apiSaveCustomCss,
   saveUsernameColor as apiSaveUsernameColor,
@@ -40,6 +41,7 @@ const allSidebarLinks = [
   { id: 'cosmetics', label: 'Cosmetics', icon: 'fa-solid fa-palette' },
   { id: 'sessions', label: 'Sessions', icon: 'fa-solid fa-desktop' },
   { id: 'cover', label: 'Profile Cover', icon: 'fa-solid fa-image', perk: 'profile_cover' },
+  { id: 'postbit', label: 'Postbit Background', icon: 'fa-solid fa-panorama', perk: null },
   { id: 'customcss', label: 'Custom CSS', icon: 'fa-solid fa-code', perk: 'custom_css' },
   { id: 'username-color', label: 'Username Color', icon: 'fa-solid fa-palette', perk: 'username_color' },
   { id: 'userbar-hue', label: 'Userbar Hue', icon: 'fa-solid fa-sliders', perk: 'userbar_hue' },
@@ -204,6 +206,8 @@ const coverPreview = ref(null)
 const coverFile = ref(null)
 const coverUploading = ref(false)
 const coverRemoving = ref(false)
+const coverOverlayOpacity = ref(authStore.user?.cover_overlay_opacity ?? 20)
+const coverOverlaySaving = ref(false)
 
 function handleCoverSelect(e) {
   const file = e.target.files?.[0]
@@ -250,6 +254,20 @@ async function handleCoverRemove() {
     saveError.value = e.response?.data?.message || 'Failed to remove cover photo.'
   } finally {
     coverRemoving.value = false
+  }
+}
+
+async function handleOverlaySave() {
+  coverOverlaySaving.value = true
+  clearMessages()
+  try {
+    await updateCoverOverlay(coverOverlayOpacity.value)
+    if (authStore.user) authStore.user.cover_overlay_opacity = coverOverlayOpacity.value
+    saveMessage.value = 'Overlay opacity saved.'
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to save overlay.'
+  } finally {
+    coverOverlaySaving.value = false
   }
 }
 
@@ -643,69 +661,7 @@ async function handleRemoveSession(id) {
               </div>
             </div>
 
-            <!-- Postbit Background (admin only — others purchase via store) -->
-            <div v-if="authStore.isAdmin" class="mb-6">
-              <label class="block text-sm font-medium mb-3" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Postbit Background</label>
-              <div class="flex items-start gap-5">
-                <div
-                  class="w-32 h-20 rounded-lg overflow-hidden border flex items-center justify-center shrink-0"
-                  :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-100'"
-                >
-                  <img
-                    v-if="postbitBgPreview"
-                    :src="postbitBgPreview"
-                    class="w-full h-full object-cover"
-                  />
-                  <img
-                    v-else-if="currentPostbitBg"
-                    :src="currentPostbitBg"
-                    class="w-full h-full object-cover"
-                  />
-                  <i v-else class="fa-solid fa-image text-xl" :class="isDark ? 'text-gray-600' : 'text-gray-400'"></i>
-                </div>
-                <div class="flex flex-col gap-2">
-                  <input
-                    ref="postbitBgFileInput"
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
-                    class="hidden"
-                    @change="handlePostbitBgSelect"
-                  />
-                  <button
-                    v-if="postbitBgFile"
-                    @click="handlePostbitBgUpload"
-                    :disabled="postbitBgUploading"
-                    class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-purple-accent hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                  >
-                    <svg v-if="postbitBgUploading" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    {{ postbitBgUploading ? 'Uploading...' : 'Upload' }}
-                  </button>
-                  <template v-else>
-                    <button
-                      @click="postbitBgFileInput?.click()"
-                      class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
-                      :class="isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'"
-                    >
-                      <i class="fa-solid fa-upload mr-1.5"></i> Choose Image
-                    </button>
-                    <button
-                      v-if="currentPostbitBg"
-                      @click="handlePostbitBgRemove"
-                      :disabled="postbitBgRemoving"
-                      class="px-4 py-2 rounded-lg text-sm font-medium text-red-400 border border-red-400/30 hover:bg-red-400/10 transition-colors disabled:opacity-50"
-                    >
-                      {{ postbitBgRemoving ? 'Removing...' : 'Remove' }}
-                    </button>
-                  </template>
-                  <p class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
-                    GIF, PNG, JPG, WebP &mdash; max 5MB
-                  </p>
-                </div>
-              </div>
-            </div>
+
 
             <div class="mb-6">
               <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Avatar Color</label>
@@ -1135,6 +1091,70 @@ async function handleRemoveSession(id) {
               <p class="text-xs mt-2" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
                 JPG, PNG, GIF, WebP &mdash; max 5MB
               </p>
+            </div>
+
+            <!-- Overlay opacity -->
+            <div class="mt-6 pt-6 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+              <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Cover Overlay Opacity
+              </label>
+              <p class="text-xs mb-3" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                A dark tint over your cover photo. 0 = none, 80 = darkest.
+              </p>
+              <div class="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="0" max="80" step="5"
+                  v-model.number="coverOverlayOpacity"
+                  class="flex-1 accent-purple-600"
+                />
+                <span class="text-sm font-mono w-10 text-center" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ coverOverlayOpacity }}%</span>
+                <button
+                  @click="handleOverlaySave"
+                  :disabled="coverOverlaySaving"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-purple-accent hover:bg-purple-700 transition-colors disabled:opacity-50"
+                >
+                  {{ coverOverlaySaving ? 'Saving…' : 'Save' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- POSTBIT BACKGROUND -->
+          <div v-show="activeSection === 'postbit'">
+            <h2 class="text-xl font-bold mb-6">Postbit Background</h2>
+            <div class="flex items-start gap-5">
+              <div
+                class="w-32 h-20 rounded-lg overflow-hidden border flex items-center justify-center shrink-0"
+                :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-100'"
+              >
+                <img v-if="postbitBgPreview" :src="postbitBgPreview" class="w-full h-full object-cover" />
+                <img v-else-if="currentPostbitBg" :src="currentPostbitBg" class="w-full h-full object-cover" />
+                <i v-else class="fa-solid fa-image text-xl" :class="isDark ? 'text-gray-600' : 'text-gray-400'"></i>
+              </div>
+              <div class="flex flex-col gap-2">
+                <input ref="postbitBgFileInput" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" @change="handlePostbitBgSelect" />
+                <button v-if="postbitBgFile" @click="handlePostbitBgUpload" :disabled="postbitBgUploading"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-purple-accent hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+                  <svg v-if="postbitBgUploading" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  {{ postbitBgUploading ? 'Uploading...' : 'Upload' }}
+                </button>
+                <template v-else>
+                  <button @click="postbitBgFileInput?.click()"
+                    class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors"
+                    :class="isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-50'">
+                    <i class="fa-solid fa-upload mr-1.5"></i> Choose Image
+                  </button>
+                  <button v-if="currentPostbitBg" @click="handlePostbitBgRemove" :disabled="postbitBgRemoving"
+                    class="px-4 py-2 rounded-lg text-sm font-medium text-red-400 border border-red-400/30 hover:bg-red-400/10 transition-colors disabled:opacity-50">
+                    {{ postbitBgRemoving ? 'Removing...' : 'Remove' }}
+                  </button>
+                </template>
+                <p class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">GIF, PNG, JPG, WebP &mdash; max 5MB</p>
+              </div>
             </div>
           </div>
 

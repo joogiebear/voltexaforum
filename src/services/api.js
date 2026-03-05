@@ -240,6 +240,7 @@ export const getAds = () => api.get('/ads')
 
 // User perks
 export const uploadCover = (formData) => api.post('/user/cover', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+export const updateCoverOverlay = (opacity) => api.put('/user/cover/overlay', { opacity })
 export const removeCover = () => api.delete('/user/cover')
 export const saveCustomCss = (data) => api.post('/user/custom-css', data)
 export const saveUsernameColor = (data) => api.post('/user/username-color', data)

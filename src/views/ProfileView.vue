@@ -93,7 +93,7 @@ watch(() => route.params.username, () => {
             :src="profile.cover_url"
             class="absolute inset-0 w-full h-full object-cover"
           />
-          <div class="absolute inset-0" :style="{ background: `linear-gradient(to bottom, transparent 75%, ${isDark ? '#111827' : '#ffffff'} 100%)` }" />
+          <div class="absolute inset-0" :style="{ background: `rgba(0,0,0,${(profile.cover_overlay_opacity ?? 20) / 100})` }" />
         </div>
         <div class="px-6 pb-6 relative">
           <div class="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-14">
