@@ -345,7 +345,9 @@ async function handleLogout() {
       </div>
     </div>
   </header>
-  <AdSlot position="header" />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2">
+    <AdSlot position="header" />
+  </div>
 
   <!-- Mobile Drawer -->
   <Drawer v-model:visible="mobileOpen" position="right" :style="{ width: '300px' }" :pt="{

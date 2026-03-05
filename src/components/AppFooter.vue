@@ -1,6 +1,7 @@
 <script setup>
 import { inject, ref, computed } from 'vue'
 import { useForumStore } from '../stores/forum'
+import AdSlot from './AdSlot.vue'
 
 const isDark = inject('isDark', ref(true))
 const forumStore = useForumStore()
@@ -9,8 +10,11 @@ const year = new Date().getFullYear()
 </script>
 
 <template>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-2">
+    <AdSlot position="footer" />
+  </div>
   <footer
-    class="mt-12 border-t transition-colors duration-300"
+    class="border-t transition-colors duration-300"
     :class="isDark ? 'bg-gray-950 border-gray-800' : 'bg-gray-50 border-gray-200'"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
