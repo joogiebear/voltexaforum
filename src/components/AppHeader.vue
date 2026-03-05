@@ -41,7 +41,6 @@ const notifDropdownOpen = ref(false)
 
 const navLinks = [
   { to: '/', label: 'Forum', icon: 'fa-solid fa-comments' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: 'fa-solid fa-ranking-star' },
   { to: '/store', label: 'Store', icon: 'fa-solid fa-store' },
   { to: '/achievements', label: 'Achievements', icon: 'fa-solid fa-trophy' },
   { to: '/upgrade', label: 'Upgrade', icon: 'fa-solid fa-rocket' },

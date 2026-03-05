@@ -37,6 +37,7 @@ const year = new Date().getFullYear()
           <ul class="space-y-2">
             <li><router-link to="/" class="text-sm transition-colors hover:text-purple-accent" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Forums</router-link></li>
             <li><router-link to="/members" class="text-sm transition-colors hover:text-purple-accent" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Members</router-link></li>
+            <li><router-link to="/leaderboard" class="text-sm transition-colors hover:text-purple-accent" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Leaderboard</router-link></li>
             <li><router-link to="/staff" class="text-sm transition-colors hover:text-purple-accent" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Staff</router-link></li>
             <li><router-link to="/achievements" class="text-sm transition-colors hover:text-purple-accent" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Achievements</router-link></li>
           </ul>

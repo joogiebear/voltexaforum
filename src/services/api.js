@@ -253,6 +253,10 @@ export const checkUnlocked = (hash) => api.get('/locked-content/check', { params
 export const getContentStatus = (hash) => api.get(`/locked-content/${hash}/status`)
 export const reportContent = (hash, status) => api.post(`/locked-content/${hash}/report`, { status })
 
+// Admin - Payment Providers
+export const getPaymentProviders = () => api.get('/admin/payment-providers')
+export const updatePaymentProvider = (provider, data) => api.put(`/admin/payment-providers/${provider}`, data)
+
 // Admin - Advertisements
 export const getAdminAds = () => api.get('/admin/advertisements')
 export const createAd = (data) => api.post('/admin/advertisements', data)
