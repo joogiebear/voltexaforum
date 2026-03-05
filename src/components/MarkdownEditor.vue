@@ -161,6 +161,13 @@ function insertBBSpoiler() {
   wrap('[spoiler]', '[/spoiler]', 'hidden text')
 }
 
+function insertBBLock() {
+  const cost = prompt('Credits required to unlock this content:', '10')
+  if (cost === null) return
+  const credits = parseInt(cost) || 10
+  wrap(`[lock=${credits}]`, '[/lock]', 'locked content')
+}
+
 const imageFileInput = ref(null)
 
 function insertBBImage() {
@@ -334,6 +341,17 @@ const bbSizes = [
         :class="isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'"
       >
         <i class="fa-solid fa-eye-slash"></i>
+      </button>
+
+      <!-- BBCode: Lock -->
+      <button
+        type="button"
+        @click="insertBBLock"
+        title="Locked Content (credits required)"
+        class="h-8 px-2 flex items-center gap-1 rounded transition-colors text-xs font-medium"
+        :class="isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'"
+      >
+        <i class="fa-solid fa-lock"></i>
       </button>
 
       <!-- BBCode: Image -->
