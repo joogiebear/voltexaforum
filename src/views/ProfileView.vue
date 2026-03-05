@@ -85,15 +85,21 @@ watch(() => route.params.username, () => {
         :class="isDark ? 'bg-gray-900' : 'bg-white shadow-sm'"
       >
         <div
-          class="h-56 relative overflow-hidden"
-          :style="!profile.cover_url ? { background: `linear-gradient(135deg, ${bannerColor}30, ${bannerColor}15)` } : {}"
+          class="h-56 relative"
+          :style="profile.cover_url
+            ? {
+                backgroundImage: `url(${profile.cover_url})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }
+            : { background: `linear-gradient(135deg, ${bannerColor}30, ${bannerColor}15)` }"
         >
-          <img
+          <div
             v-if="profile.cover_url"
-            :src="profile.cover_url"
-            class="absolute inset-0 w-full h-full object-cover"
+            class="absolute inset-0"
+            :style="{ background: `rgba(0,0,0,${(profile.cover_overlay_opacity ?? 20) / 100})` }"
           />
-          <div class="absolute inset-0" :style="{ background: `rgba(0,0,0,${(profile.cover_overlay_opacity ?? 20) / 100})` }" />
         </div>
         <div class="px-6 pb-6 relative">
           <div class="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-14">
