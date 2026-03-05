@@ -8,6 +8,7 @@ import { useMessagesStore } from '../stores/messages'
 import { useForumStore } from '../stores/forum'
 import UserAvatar from './UserAvatar.vue'
 import NotificationDropdown from './NotificationDropdown.vue'
+import AdSlot from './AdSlot.vue'
 
 const isDark = inject('isDark')
 const toggleTheme = inject('toggleTheme')
@@ -344,6 +345,7 @@ async function handleLogout() {
       </div>
     </div>
   </header>
+  <AdSlot position="header" />
 
   <!-- Mobile Drawer -->
   <Drawer v-model:visible="mobileOpen" position="right" :style="{ width: '300px' }" :pt="{

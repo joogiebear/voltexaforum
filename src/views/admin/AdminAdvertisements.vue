@@ -8,6 +8,8 @@ const loading = ref(true)
 const ads = ref([])
 const showForm = ref(false)
 const editingId = ref(null)
+const imagePreview = ref(null)
+const imageInput = ref(null)
 
 const form = ref({
   title: '',
@@ -93,9 +95,6 @@ async function handleDelete(ad) {
     toast.show(e.response?.data?.message || 'Failed to delete ad', 'error')
   }
 }
-
-const imagePreview = ref(null)
-const imageInput = ref(null)
 
 function handleImageSelect(e) {
   const file = e.target.files?.[0] || null
