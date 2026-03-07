@@ -5,14 +5,11 @@ import { getMembers } from '../services/api'
 import UserAvatar from '../components/UserAvatar.vue'
 import { useForumStore } from '../stores/forum'
 import { useAuthStore } from '../stores/auth'
-import { usePlan } from '../composables/usePlan'
-import UpgradeBanner from '../components/UpgradeBanner.vue'
 
 const isDark = inject('isDark', ref(true))
 const router = useRouter()
 const forumStore = useForumStore()
 const authStore = useAuthStore()
-const { maxMembers, isUnlimited } = usePlan()
 
 const members = ref([])
 const meta = ref({ total: 0, current_page: 1, last_page: 1 })
@@ -53,42 +50,12 @@ function onSearch() {
   searchTimer = setTimeout(() => { page.value = 1; load() }, 350)
 }
 
-const memberWarning = computed(() => {
-  if (!authStore.isAdmin || isUnlimited(maxMembers.value)) return null
-  const total = meta.value.total || 0
-  if (total >= maxMembers.value) return 'limit'
-  if (total >= maxMembers.value * 0.8) return 'warning'
-  return null
-})
-
 watch(sort, () => { page.value = 1; load() })
 onMounted(load)
 </script>
 
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-    <!-- Member limit banner -->
-    <UpgradeBanner
-      v-if="memberWarning === 'limit'"
-      limitType="member"
-      :current="meta.total || 0"
-      :max="maxMembers"
-      :dismissible="false"
-      class="mb-4"
-    />
-    <div
-      v-else-if="memberWarning === 'warning'"
-      class="mb-4 rounded-xl border p-4 flex items-center gap-3"
-      :class="isDark ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'"
-    >
-      <span class="text-lg shrink-0">&#9888;&#65039;</span>
-      <p class="text-sm" :class="isDark ? 'text-gray-200' : 'text-gray-700'">
-        You're approaching your member limit
-        (<span class="font-semibold text-amber-400">{{ meta.total?.toLocaleString() }}/{{ maxMembers.toLocaleString() }}</span>).
-        Consider upgrading your plan.
-      </p>
-    </div>
-
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
       <div>

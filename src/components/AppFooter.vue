@@ -1,12 +1,10 @@
 <script setup>
 import { inject, ref, computed } from 'vue'
 import { useForumStore } from '../stores/forum'
-import { usePlan } from '../composables/usePlan'
 import AdSlot from './AdSlot.vue'
 
 const isDark = inject('isDark', ref(true))
 const forumStore = useForumStore()
-const { removeBranding } = usePlan()
 const forumName = computed(() => forumStore.config?.forum_name || 'My Forum')
 const year = new Date().getFullYear()
 </script>
@@ -83,7 +81,7 @@ const year = new Date().getFullYear()
         :class="isDark ? 'border-gray-800 text-gray-600' : 'border-gray-200 text-gray-400'"
       >
         <span>&copy; {{ year }} {{ forumName }}. All rights reserved.</span>
-        <span v-if="!removeBranding" class="flex items-center gap-1">
+        <span class="flex items-center gap-1">
           Powered by
           <span class="font-semibold text-purple-accent ml-1">VoltexaHub</span>
         </span>

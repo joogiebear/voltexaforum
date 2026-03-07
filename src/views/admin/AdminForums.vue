@@ -8,12 +8,9 @@ import {
   reorderCategories, reorderForums,
 } from '../../services/api'
 import { useToastStore } from '../../stores/toast'
-import { usePlan } from '../../composables/usePlan'
-import UpgradeBanner from '../../components/UpgradeBanner.vue'
 import FaIconPicker from '../../components/FaIconPicker.vue'
 
 const toast = useToastStore()
-const { maxForums, isUnlimited } = usePlan()
 const loading = ref(true)
 const error = ref(null)
 
@@ -238,18 +235,6 @@ function getParentName(forum, category) {
   return parent?.name || null
 }
 
-const totalForumCount = computed(() => {
-  let count = 0
-  for (const cat of tree.value) {
-    count += (cat.forums || []).length
-  }
-  return count
-})
-
-const forumLimitReached = computed(() => {
-  return !isUnlimited(maxForums.value) && totalForumCount.value >= maxForums.value
-})
-
 onMounted(fetchTree)
 </script>
 
@@ -260,14 +245,6 @@ onMounted(fetchTree)
       <span class="text-sm text-red-400">{{ error }}</span>
       <button @click="fetchTree" class="px-3 py-1.5 bg-red-500/20 text-red-400 text-xs font-medium rounded-lg hover:bg-red-500/30 transition-colors">Retry</button>
     </div>
-
-    <!-- Forum limit banner -->
-    <UpgradeBanner
-      v-if="forumLimitReached"
-      limitType="forum"
-      :current="totalForumCount"
-      :max="maxForums"
-    />
 
     <div class="flex items-center justify-between">
       <p class="text-sm text-gray-400">Manage the forum hierarchy: categories, forums, and subforums.</p>
@@ -330,7 +307,7 @@ onMounted(fetchTree)
               <span class="text-xs text-gray-500">{{ category.forums?.length || 0 }} forums</span>
             </div>
             <div class="flex items-center gap-2">
-              <button v-if="!forumLimitReached" @click.stop="showForm(`forum-${category.id}`)" class="px-2 py-1 text-xs text-violet-400 hover:bg-violet-500/10 rounded transition-colors">+ Forum</button>
+              <button @click.stop="showForm(`forum-${category.id}`)" class="px-2 py-1 text-xs text-violet-400 hover:bg-violet-500/10 rounded transition-colors">+ Forum</button>
               <button @click.stop="openEditModal('category', category)" class="p-1.5 rounded-lg hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
                 <i class="fa-solid fa-pen-to-square text-sm"></i>
               </button>

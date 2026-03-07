@@ -3,12 +3,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAdminPlugins, installPlugin, togglePlugin, uninstallPlugin } from '../../services/api'
 import { useToastStore } from '../../stores/toast'
-import { usePlan } from '../../composables/usePlan'
-import UpgradeBanner from '../../components/UpgradeBanner.vue'
 
 const toast = useToastStore()
 const router = useRouter()
-const { pluginsEnabled } = usePlan()
 const plugins = ref([])
 const loading = ref(true)
 const showUploadModal = ref(false)
@@ -98,22 +95,8 @@ onMounted(fetchPlugins)
 
 <template>
   <div class="space-y-6">
-    <!-- Plugins disabled banner -->
-    <template v-if="!pluginsEnabled">
-      <UpgradeBanner
-        limitType="plugin"
-        :current="0"
-        :max="0"
-        :dismissible="false"
-      />
-      <div class="bg-gray-800 rounded-xl border border-gray-700/50 p-12 text-center">
-        <div class="text-4xl mb-3 text-gray-600"><i class="fa-solid fa-lock"></i></div>
-        <p class="text-sm text-gray-400">Plugins are not available on your current plan.</p>
-      </div>
-    </template>
-
     <!-- Header -->
-    <div v-if="pluginsEnabled" class="flex items-center justify-between">
+    <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <h2 class="text-lg font-semibold text-white">Plugins</h2>
         <span class="px-2.5 py-0.5 bg-violet-500/10 text-violet-400 rounded-full text-xs font-semibold">
@@ -129,7 +112,7 @@ onMounted(fetchPlugins)
     </div>
 
     <!-- Loading skeleton -->
-    <div v-if="pluginsEnabled && loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div v-for="i in 2" :key="i" class="bg-gray-800 rounded-xl border border-gray-700/50 p-5 animate-pulse">
         <div class="h-5 bg-gray-700 rounded w-1/3 mb-3"></div>
         <div class="h-4 bg-gray-700 rounded w-2/3 mb-4"></div>
@@ -138,7 +121,7 @@ onMounted(fetchPlugins)
     </div>
 
     <!-- Available on disk (not installed) -->
-    <div v-if="pluginsEnabled && !loading && availablePlugins.length" class="bg-gray-800 rounded-xl border border-gray-700/50 p-5 space-y-4">
+    <div v-if="!loading && availablePlugins.length" class="bg-gray-800 rounded-xl border border-gray-700/50 p-5 space-y-4">
       <h3 class="text-sm font-semibold text-white flex items-center gap-2">
         <i class="fa-solid fa-hard-drive text-gray-400 text-xs"></i>
         Available on Disk
@@ -168,7 +151,7 @@ onMounted(fetchPlugins)
     </div>
 
     <!-- Installed Plugins -->
-    <div v-if="pluginsEnabled && !loading" class="space-y-4">
+    <div v-if="!loading" class="space-y-4">
       <h3 class="text-sm font-semibold text-white flex items-center gap-2">
         <i class="fa-solid fa-puzzle-piece text-gray-400 text-xs"></i>
         Installed Plugins

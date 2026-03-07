@@ -3,13 +3,11 @@ import { inject, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useForumStore } from '../stores/forum'
-import { usePlan } from '../composables/usePlan'
 
 const isDark = inject('isDark')
 const router = useRouter()
 const authStore = useAuthStore()
 const forumStore = useForumStore()
-const { maxMembers, isUnlimited } = usePlan()
 const forumName = computed(() => forumStore.config?.forum_name || 'My Forum')
 
 const username = ref('')

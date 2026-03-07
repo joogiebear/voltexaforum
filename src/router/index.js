@@ -34,7 +34,7 @@ const routes = [
   { path: '/messages', name: 'Messages', component: MessagesView, meta: { requiresAuth: true } },
   { path: '/messages/:id', name: 'Conversation', component: MessagesView, meta: { requiresAuth: true } },
   { path: '/members', name: 'Members', component: () => import('../views/MembersView.vue') },
-  { path: '/upgrade', name: 'Upgrade', component: () => import('../views/UpgradeView.vue') },
+
   { path: '/staff', name: 'Staff', component: () => import('../views/StaffView.vue') },
   { path: '/search', name: 'Search', component: SearchView },
   { path: '/forum/:slug/new-thread', name: 'NewThread', component: NewThreadView, meta: { requiresAuth: true } },
@@ -63,7 +63,7 @@ const routes = [
       { path: 'content/threads', name: 'AdminContentThreads', component: () => import('../views/admin/content/AdminContentThreads.vue'), meta: { title: 'Threads' } },
       { path: 'content/posts', name: 'AdminContentPosts', component: () => import('../views/admin/content/AdminContentPosts.vue'), meta: { title: 'Posts' } },
       // Commerce
-      { path: 'upgrades', name: 'AdminUpgrades', component: () => import('../views/admin/AdminUpgrades.vue'), meta: { title: 'Upgrade Plans' } },
+
       { path: 'store', redirect: '/admin/store/items' },
       { path: 'store/items', name: 'AdminStoreItems', component: () => import('../views/admin/AdminStoreItems.vue'), meta: { title: 'Store Items' } },
       { path: 'store/purchases', name: 'AdminStorePurchases', component: () => import('../views/admin/AdminStorePurchases.vue'), meta: { title: 'Purchases' } },
